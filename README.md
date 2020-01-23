@@ -29,16 +29,14 @@ descriptions of each industry.
 
 ## SHRUG (1991-2013)
 
-| Files  | 
-| ------ |-------------
-| shrug_pc01_pca | Population Census Abstracts -- demographic data
-| shrug_pc91_pca | Covering years 1991, 2001, 2011
-| shrug_pc11_pca | 
-| ------ |----------------
-| shrug_pc*_vd   | Village directories: list of village public goods
-| shrug_pc*_td   | Town directories: list of urban public goods
-| shrug_ec13     | 2013 Economic Census: more info on non-farm employment
-| --------| ----------------
+
+`shrug_pc91_pca`,`shrug_pc01_pca`,`shrug_pc11_pca`: Population Census Abstracts -- demographic data
+covering years 1991, 2001, 2011
+
+`shrug_pc*_vd`: Village directories: list of village public goods (1991-2011)
+`shrug_pc*_td`: Town directories: list of urban public goods (1991-2011)
+`shrug_ec13`: 2013 Economic Census: more info on non-farm
+employment but the same underlying data as the ec_flfp files above.
 
 ## NSS (2012)
 
