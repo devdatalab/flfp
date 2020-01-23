@@ -28,7 +28,12 @@ foreach y in 90 98 05 13 {
   gen emp_f_with_f_owner = emp_f if owner_sex == 2
   gen emp_f_with_o_owner = emp_f if owner_sex == 9
 
-  collapse (sum) emp_*_owner emp_m emp_f, by(shrid shric)
+  /* create count variables for male, female, and other owned firms */
+  gen count_m = 1 if owner_sex == 1
+  gen count_f = 1 if owner_sex == 2
+  gen count_o = 1 if owner_sex == 9
+  
+  collapse (sum) count_* emp_*_owner emp_m emp_f, by(shrid shric)
 
   save $tmp/ec_flfp_`y', replace
 }
