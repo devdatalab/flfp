@@ -22,10 +22,9 @@ in India. These don't include agricultural work. These are aggregated
 as sums to the shrid (town/village) level -- `emp_all` describes total
 employment, `emp_m` and `emp_f` describe male and female employment,
 and the `*_owner` variables describe total employment in male and
-female-owned firms. The `o` in owner is described as "other",
-i.e. (male/female/other). The numbers in some years are way too high
-for this to be possible, so we need to investigate whether this means
-female or missing.
+female-owned firms. The `o` in owner is described as "other"; we
+should drop these firms when studying ownership--- they seem to be
+public firms and we don't have ownership information on them.
 
 `shrid` is a location, which is a town or village. `shric` is an
 industry code. The dataset `shric_descriptions.dta` provides
@@ -33,14 +32,18 @@ descriptions of each industry.
 
 ## SHRUG (1991-2013)
 
-
 `shrug_pc91_pca`,`shrug_pc01_pca`,`shrug_pc11_pca`: Population Census Abstracts -- demographic data
 covering years 1991, 2001, 2011
 
 `shrug_pc*_vd`: Village directories: list of village public goods (1991-2011)
+
 `shrug_pc*_td`: Town directories: list of urban public goods (1991-2011)
+
 `shrug_ec13`: 2013 Economic Census: more info on non-farm
 employment but the same underlying data as the ec_flfp files above.
+
+`shrug_names`: State, district, subdistrict and villagetown name for
+each shrid
 
 ## NSS (2012)
 

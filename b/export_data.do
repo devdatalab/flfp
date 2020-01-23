@@ -14,12 +14,15 @@ shell rsync $shrug/keys/shric_descriptions.dta $flfp
 foreach v in ec13 nl_wide pc01_pca pc01_td pc01_vd pc11_pca pc11_vd pc11_td pc91_pca pc91_td pc91_vd {
   shell rsync $shrug/data/shrug_`v'.dta $flfp
 }
-  
+
+/* shrug names */
+shell rsync $shrug/keys/shrug_names.dta $flfp
+
 /* export nss */
 cap mkdir $flfp/nss
 shell rsync $nss/nss-68/10/block*.dta $flfp/nss
 
 /* zip everything */
 cd $flfp
-zip -R flfp.zip '*.dta'
+shell zip -R flfp.zip '*.dta'
 
