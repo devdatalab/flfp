@@ -11,10 +11,7 @@ e/ | Exploration files-- anything goes
 
 ## Economic Censuses (1990, 1998, 2005, 2013)
 
-Files | ec_flfp_90.dta
-      | ec_flfp_98.dta
-      | ec_flfp_05.dta
-      | ec_flfp_13.dta
+Files: ec_flfp_90.dta, ec_flfp_98.dta, ec_flfp_05.dta, ec_flfp_13.dta
 
 Economic Censuses are complete enumerations of non-farm establishments
 in India. These don't include agricultural work. These are aggregated
@@ -32,16 +29,16 @@ descriptions of each industry.
 
 ## SHRUG (1991-2013)
 
-Files | 
--------------------
-shrug_pc01_pca | Population Census Abstracts -- demographic data
-shrug_pc91_pca | Covering years 1991, 2001, 2011
-shrug_pc11_pca | 
-----------------------
-shrug_pc*_vd   | Village directories: list of village public goods
-shrug_pc*_td   | Town directories: list of urban public goods
-shrug_ec13     | 2013 Economic Census: more info on non-farm employment
-------------------------
+| Files  | 
+| ------ |-------------
+| shrug_pc01_pca | Population Census Abstracts -- demographic data
+| shrug_pc91_pca | Covering years 1991, 2001, 2011
+| shrug_pc11_pca | 
+| ------ |----------------
+| shrug_pc*_vd   | Village directories: list of village public goods
+| shrug_pc*_td   | Town directories: list of urban public goods
+| shrug_ec13     | 2013 Economic Census: more info on non-farm employment
+| --------| ----------------
 
 ## NSS (2012)
 
