@@ -1,11 +1,15 @@
 # flfp
 Studying female labor force participation in India
 
-# Repository structure
+# Repository structure / rules
 
-a/ | Analysis files (produce results only, do not save new datasets)
-b/ | Build files (no analysis, only build working datasets)
-e/ | Exploration files-- anything goes
+`a/`:  Analysis files (produce results only, do not save new datasets)
+
+`b/`:  Build files (no analysis, only build working datasets)
+
+`e/`:  Exploration files-- anything goes
+
+Please do not check data files into the repository. Code files only.
 
 # Dataset descriptions
 
