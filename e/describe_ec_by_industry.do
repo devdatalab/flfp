@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**************************************/
 /* Describe EC by Industry and Gender */
 /**************************************/
@@ -63,11 +64,52 @@ gsort - emp_m_owner
 list shric_desc emp_m_owner in 1/10, string(40)
 
 /* rename variables for future merge */
+=======
+/* Finding total female employment and percentage of employees female divided by Industry */
+
+use $flfp/ec_flfp_13.dta, clear // Load EC 13
+
+drop if shric == .	//Drop any observations that don't have any shrics or shrids
+drop if shrid == ""
+
+collapse (sum) emp_m emp_f count_m count_f count_o emp_m_owner emp_f_owner emp_o_owner, by (shric) // Collapse employment numbers by shric
+
+merge m:1 shric using $flfp/shric_descriptions.dta // Merge with shric descriptions and drop merge 
+drop _merge
+
+gen emp_total = emp_f + emp_m //Generate total employed variable
+gen perc_f_13 = emp_f/(emp_total) //Generate percentage female variable
+
+gsort - emp_f	//Sort by total employment in descending order
+list shric_desc emp_f in 1/10, string(40) //Display top 10 industries by total female employment
+
+gsort - perc_f_13 //Sort by Percentage of employed that are female 
+list shric_desc perc_f_13 in 1/10, string(40) //Display top 10 industries by female percentage
+
+// female-owned firms and employment in female owned firms
+
+gsort - count_f	//Sort by total female owned firms in descending order
+list shric_desc count_f in 1/10, string(40) //Display top 10 industries by female ownership
+
+gsort - emp_f_owner	//Sort by total employment in female owned firms in descending order
+list shric_desc emp_f_owner in 1/10, string(40) //Display top 10 industries by employment in female owned firms
+
+// male-owned firms and employment in male owned firms
+
+gsort - count_m	//Sort by total male owned firms in descending order
+list shric_desc count_m in 1/10, string(40) //Display top 10 industries by male ownership
+
+gsort - emp_m_owner	//Sort by total employment in male owned firms in descending order
+list shric_desc emp_m_owner in 1/10, string(40) //Display top 10 industries by employment in male owned firms
+
+
+>>>>>>> e617ab510f1b1b2013fbe4a5cf3427cb8af80595
 ren emp_f emp_f_13
 ren count_m count_m_13
 ren count_f count_f_13
 ren emp_m_owner emp_m_owner_13
 ren emp_f_owner emp_f_owner_13
+<<<<<<< HEAD
 ren emp_o_owner emp_o_owner_13
 
 /* save temporary file */
@@ -76,6 +118,16 @@ save $tmp/ec_13_industry.dta, replace
 /******************************************************/
 /* B) List top industry employment by gender for EC05 */
 /******************************************************/
+=======
+ren emp_o_owner emp_o_owner_13 //Rename for future merge
+
+save $tmp/ec_13_industry.dta, replace //Save in temporary file
+
+** Repeat process for each of the ECs **
+
+// 2005
+
+>>>>>>> e617ab510f1b1b2013fbe4a5cf3427cb8af80595
 
 use $flfp/ec_flfp_05.dta, clear 
 
@@ -122,9 +174,14 @@ drop _merge emp_m emp_total
 
 save $tmp/ec_13_05_industry.dta, replace
 
+<<<<<<< HEAD
 /******************************************************/
 /* C) List top industry employment by gender for EC98 */
 /******************************************************/
+=======
+// 1998
+
+>>>>>>> e617ab510f1b1b2013fbe4a5cf3427cb8af80595
 
 use $flfp/ec_flfp_98.dta, clear 
 
@@ -174,9 +231,14 @@ drop _merge
 
 save $tmp/ec13050_industry.dta, replace
 
+<<<<<<< HEAD
 /******************************************************/
 /* D) List top industry employment by gender for EC90 */
 /******************************************************/
+=======
+// 1990
+
+>>>>>>> e617ab510f1b1b2013fbe4a5cf3427cb8af80595
 
 use $flfp/ec_flfp_90, clear	
 
@@ -225,6 +287,7 @@ drop _merge
 
 save $flfp/ec_by_industry.dta, replace //Save file with percentages and total employment numbers for each EC
 
+<<<<<<< HEAD
 /*******************************************************************/
 /* E) List female industry employment changes over all EC datasets */
 /*******************************************************************/
@@ -246,6 +309,33 @@ gen dif_90_13 = emp_f_13-emp_f_90
 gen dif_90_13_percent = (emp_f_13-emp_f_90)/emp_f_90
 
 /* sort by "absolute female employment difference" and list top 10 industries */
+=======
+// seeing differences in emp_f across time periods - which industry added the most female jobs? //
+
+use $flfp/ec_by_industry.dta, clear
+
+// gen variables for difference between each EC and corresponding percentage increases //
+
+gen dif_90_98 = emp_f_98-emp_f_90
+
+gen dif_90_98_percent = (emp_f_98-emp_f_90)/emp_f_90
+
+gen dif_98_05 = emp_f_05-emp_f_98
+
+gen dif_98_05_percent = (emp_f_05-emp_f_98)/emp_f_98
+
+gen dif_05_13 = emp_f_13-emp_f_05
+
+gen dif_05_13_percent = (emp_f_13-emp_f_05)/emp_f_05
+
+gen dif_90_13 = emp_f_13-emp_f_90
+
+gen dif_90_13_percent = (emp_f_13-emp_f_90)/emp_f_90
+
+
+// list industries that added most female employees (absolute and percentage increase) across time periods //
+
+>>>>>>> e617ab510f1b1b2013fbe4a5cf3427cb8af80595
 gsort - dif_90_98
 list shric_desc dif_90_98 in 1/10, string(40)
 
@@ -258,7 +348,10 @@ list shric_desc dif_05_13 in 1/10, string(40)
 gsort - dif_90_13
 list shric_desc dif_90_13 in 1/10, string(40)
 
+<<<<<<< HEAD
 /* sort by "% change in female employment" and list top 10 industries */
+=======
+>>>>>>> e617ab510f1b1b2013fbe4a5cf3427cb8af80595
 gsort - dif_90_98_percent
 list shric_desc dif_90_98_percent in 1/10, string(40)
 
@@ -271,6 +364,7 @@ list shric_desc dif_05_13_percent in 1/10, string(40)
 gsort - dif_90_13_percent
 list shric_desc dif_90_13_percent in 1/10, string(40)
 
+<<<<<<< HEAD
 /****************************************************************************/
 /* F) List major changes in female industry employment over all EC datasets */
 /****************************************************************************/
@@ -313,6 +407,45 @@ list shric_desc count_f_98 count_f_05 count_f_13 dif_count_98_05 dif_count_05_13
 /***************************************************************************************/
 /* H) List employment at female-owned enterprise industry changes over all EC datasets */
 /***************************************************************************************/
+=======
+// trying to put the top 10 together so that we can compare industries across the 4 periods
+
+gsort - dif_90_13 // sorting top 10 with highest increase in female employees between 1990 and 2013
+list shric_desc dif_90_98 dif_98_05 dif_05_13 dif_90_13 dif_90_98_percent dif_98_05_percent dif_05_13_percent dif_90_13_percent in 1/10, string(40) // see how much increase between every period in those industries 
+
+// Note: the obove list is top 10 by absolute numbers, while the one below is top 10 by percentage increase. however, it contains both absolute and percentage increases for the corresponding top 10.
+
+gsort - dif_90_13_percent // sorting top 10 with highest increase in female employees between 1990 and 2013
+list shric_desc dif_90_98_percent dif_98_05_percent dif_05_13_percent dif_90_13_percent dif_90_98 dif_98_05 dif_05_13 dif_90_13 in 1/10, string(40) // see how much increase between every period in those industries 
+
+// notice that while some industries post high percentage increase, the absolute numbers for the same industries aren't so significant
+
+
+// look at change in female owned enterprises over the 4 time periods
+
+// gen variables for change in count_f_* in every period
+
+gen dif_count_98_05 = count_f_05-count_f_98
+gen dif_count_05_13 = count_f_13-count_f_05
+gen dif_count_98_13 = count_f_13-count_f_98
+
+// sorting top 10 with greatest increase in female owned firms between 1998 and 2005
+
+gsort - dif_count_98_05
+list shric_desc count_f_98 count_f_05 dif_count_98_05 in 1/10, string (40)
+
+// sorting top 10 with greatest increase in female owned firms between 2005 and 2013
+
+gsort - dif_count_05_13
+list shric_desc count_f_05 count_f_13 dif_count_05_13 in 1/10, string (40)
+
+// sorting top 10 with greatest increase in female owned firms between 1998 and 2013 and putting relevant numbers for the same list
+
+gsort - dif_count_98_13
+list shric_desc count_f_98 count_f_05 count_f_13 dif_count_98_05 dif_count_05_13 dif_count_98_13 in 1/10, string (40)
+
+// looking at change in employment in female owned enterprises over the 4 time periods
+>>>>>>> e617ab510f1b1b2013fbe4a5cf3427cb8af80595
 
 gen dif_emp_f_owner_98_05 = emp_f_owner_05-emp_f_owner_98
 gen dif_emp_f_owner_05_13 = emp_f_owner_13-emp_f_owner_05
