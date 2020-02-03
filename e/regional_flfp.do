@@ -23,7 +23,6 @@ merge m:1 shrid using $flfp/shrug_names.dta
 drop if shrid == ""
 
 /* encode South India dummy */
-/* NOTE: no Telangana, not sure if the unlabeled observations refer to it */
 gen south_india_dummy = 0
 replace south_india_dummy = 1 if inlist(state_name, "andaman nicobar islands", "andhra pradesh", "karnataka", "kerala", "lakshadweep", "puducherry", "tamil nadu")
 
