@@ -43,8 +43,9 @@ drop village
 collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc11_pca_tot_f pc11_pca_tot_m pc11_pca_tot_p pc11_pca_tot_work_p pc11_pca_tot_work_f pc11_pca_tot_work_m pc11_pca_non_work_p pc11_pca_non_work_f pc11_pca_non_work_m, by (shric)
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' urban_ec13_`var'
+        rename `var' urban_`var'_13
 }
+
 
 foreach var in pc11_pca_tot_f pc11_pca_tot_m pc11_pca_tot_p pc11_pca_tot_work_p pc11_pca_tot_work_f pc11_pca_tot_work_m pc11_pca_non_work_p pc11_pca_non_work_f pc11_pca_non_work_m {
         rename `var' urban_`var'
@@ -83,7 +84,7 @@ drop town
 collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc11_pca_tot_f pc11_pca_tot_m pc11_pca_tot_p pc11_pca_tot_work_p pc11_pca_tot_work_f pc11_pca_tot_work_m pc11_pca_non_work_p pc11_pca_non_work_f pc11_pca_non_work_m, by (shric)
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' rural_ec13_`var'
+        rename `var' rural_`var'_13
 }
 
 foreach var in pc11_pca_tot_f pc11_pca_tot_m pc11_pca_tot_p pc11_pca_tot_work_p pc11_pca_tot_work_f pc11_pca_tot_work_m pc11_pca_non_work_p pc11_pca_non_work_f pc11_pca_non_work_m {
@@ -152,7 +153,7 @@ drop village
 collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc01_pca_tot_f pc01_pca_tot_m pc01_pca_tot_p pc01_pca_tot_work_p pc01_pca_tot_work_f pc01_pca_tot_work_m pc01_pca_non_work_p pc01_pca_non_work_f pc01_pca_non_work_m, by (shric)
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' urban_ec05_`var'
+        rename `var' urban_`var'_5
 }
 
 foreach var in pc01_pca_tot_f pc01_pca_tot_m pc01_pca_tot_p pc01_pca_tot_work_p pc01_pca_tot_work_f pc01_pca_tot_work_m pc01_pca_non_work_p pc01_pca_non_work_f pc01_pca_non_work_m {
@@ -198,7 +199,7 @@ drop town
 collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc01_pca_tot_f pc01_pca_tot_m pc01_pca_tot_p pc01_pca_tot_work_p pc01_pca_tot_work_f pc01_pca_tot_work_m pc01_pca_non_work_p pc01_pca_non_work_f pc01_pca_non_work_m, by (shric)
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' rural_ec05_`var'
+        rename `var' rural_`var'_5
 }
 
 foreach var in pc01_pca_tot_f pc01_pca_tot_m pc01_pca_tot_p pc01_pca_tot_work_p pc01_pca_tot_work_f pc01_pca_tot_work_m pc01_pca_non_work_p pc01_pca_non_work_f pc01_pca_non_work_m {
@@ -260,7 +261,7 @@ collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc01_pca_tot_
 
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' urban_ec98_`var'
+        rename `var' urban_`var'_98
 }
 
 foreach var in pc01_pca_tot_f pc01_pca_tot_m pc01_pca_tot_p pc01_pca_tot_work_p pc01_pca_tot_work_f pc01_pca_tot_work_m pc01_pca_non_work_p pc01_pca_non_work_f pc01_pca_non_work_m {
@@ -300,7 +301,7 @@ drop town
 collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc01_pca_tot_f pc01_pca_tot_m pc01_pca_tot_p pc01_pca_tot_work_p pc01_pca_tot_work_f pc01_pca_tot_work_m pc01_pca_non_work_p pc01_pca_non_work_f pc01_pca_non_work_m, by (shric)
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' rural_ec98_`var'
+        rename `var' rural_`var'_98
 }
 
 foreach var in pc01_pca_tot_f pc01_pca_tot_m pc01_pca_tot_p pc01_pca_tot_work_p pc01_pca_tot_work_f pc01_pca_tot_work_m pc01_pca_non_work_p pc01_pca_non_work_f pc01_pca_non_work_m {
@@ -360,7 +361,7 @@ drop village
 collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc91_pca_tot_f pc91_pca_tot_m pc91_pca_tot_p pc91_pca_non_work_p pc91_pca_non_work_f pc91_pca_non_work_m, by (shric)
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' urban_ec90_`var'
+        rename `var' urban_`var'_90
 }
 
 foreach var in pc91_pca_tot_f pc91_pca_tot_m pc91_pca_tot_p pc91_pca_non_work_p pc91_pca_non_work_f pc91_pca_non_work_m {
@@ -402,7 +403,7 @@ collapse (sum) emp_f emp_m count_f count_m emp_f_owner emp_m_owner pc91_pca_tot_
 
 
 foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
-        rename `var' rural_ec90_`var'
+        rename `var' rural_`var'_90
 }
 
 foreach var in pc91_pca_tot_f pc91_pca_tot_m pc91_pca_tot_p pc91_pca_non_work_p pc91_pca_non_work_f pc91_pca_non_work_m {
@@ -457,6 +458,83 @@ drop if shric==.
 save $tmp/all_urban_rural, replace
 
 
+//======================================================/
+/////RESHAPING & CREATING DUMMIES FOR YEARS AND REGION///
+//======================================================//
 
+use $tmp/all_urban_rural.dta, clear
+
+// Reshape to make shric-year pairs
+
+reshape long rural_emp_f_ rural_emp_m_ rural_count_f_ rural_count_m_ rural_emp_f_owner_ rural_emp_m_owner_ urban_emp_f_ urban_emp_m_ urban_count_f_ urban_count_m_ urban_emp_f_owner_ urban_emp_m_owner_, i(shric) j(year)
+
+//Recode the year variable as actual numbers
+
+replace year = 1990 if year == 90 
+replace year = 1998 if year == 98
+replace year = 2005 if year == 05
+replace year = 2013 if year == 13
+
+
+keep shric year rural_emp_f_ rural_emp_m_ rural_count_f_ rural_count_m_ rural_emp_f_owner_ rural_emp_m_owner_ urban_emp_f_ urban_emp_m_ urban_count_f_ urban_count_m_ urban_emp_f_owner_ urban_emp_m_owner_
+
+// reshape to make shric-year-urban combinations
+
+
+// rename to make reshaping possible
+
+ds rural*
+
+foreach var in `r(varlist)' {
+      rename `var' `var'1 
+}
+
+ds urban*
+
+foreach var in `r(varlist)' {
+      rename `var' `var'2 
+}
+
+// remove rural_ prefix
+
+renpfix rural_
+
+// remove urban_ prefix
+
+renpfix urban_
+
+// reshape command
+
+
+reshape long emp_f_ emp_m_ count_f_ count_m_ emp_f_owner_ emp_m_owner_, i(shric year) j(region)
+
+// remove extra underscores
+
+rename *_ *
+
+
+// create dummies for urban
+
+gen urban= (region==2)
+
+
+// create dummies for years
+
+
+gen yr1998= (year==1998)
+gen yr2005= (year==2005)
+gen yr2013= (year==2013)
+
+
+
+// generate log variables for employment related variables
+
+ds emp* count*
+
+foreach y in `r(varlist)' {
+   gen ln_`y' = ln(`y' + 1)
+}
+
+save $tmp/all_urban_rural_reshaped, replace
 
 
