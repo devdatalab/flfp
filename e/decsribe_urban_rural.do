@@ -535,6 +535,21 @@ foreach y in `r(varlist)' {
    gen ln_`y' = ln(`y' + 1)
 }
 
+merge m:1 shric using $flfp/shric_descriptions.dta
+
+drop _merge
+
 save $tmp/all_urban_rural_reshaped, replace
+
+
+//======================================================/
+//////////////////RELEVANT ANALYSIS BY SHRIC/////////////
+//======================================================//
+
+forval i= 1(1)90 {
+   display "shric=`i'"
+   reg ln_emp_f yr1998 yr2005 yr2013 urban if shric==`i'
+   reg ln_count_f yr1998 yr2005 yr2013 urban if shric==`i'
+}
 
 
