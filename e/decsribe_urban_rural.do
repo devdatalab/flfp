@@ -546,10 +546,43 @@ save $tmp/all_urban_rural_reshaped, replace
 //////////////////RELEVANT ANALYSIS BY SHRIC/////////////
 //======================================================//
 
+// generate interaction terms
+
+foreach var in yr1998 yr2005 yr2013 {
+    gen urban_`var'=urban*`var'
+}
+
+// FOR LOG EMPLOYMENT
+
+
+// run diff-in-diff regressions for emp_f
+
+
 forval i= 1(1)90 {
    display "shric=`i'"
-   reg ln_emp_f yr1998 yr2005 yr2013 urban if shric==`i'
-   reg ln_count_f yr1998 yr2005 yr2013 urban if shric==`i'
+   reg ln_emp_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
 }
 
 
+// run diff-in-diff regressions for count_f
+
+forval i= 1(1)90 {
+   display "shric=`i'"
+   reg ln_count_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
+}
+
+// FOR ABSOLUTE NUMBERS
+
+// run diff-in-diff regressions for emp_f
+
+forval i= 1(1)90 {
+   display "shric=`i'"
+   reg emp_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
+}
+
+// run diff-in-diff regressions for count_f
+
+forval i= 1(1)90 {
+   display "shric=`i'"
+   reg count_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
+}
