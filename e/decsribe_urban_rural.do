@@ -552,15 +552,17 @@ foreach var in yr1998 yr2005 yr2013 {
     gen urban_`var'=urban*`var'
 }
 
-// FOR LOG EMPLOYMENT
+// LOG REGRESSIONS
+
+reg ln_emp_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==1
+outreg2 using $tmp/urban_rural, excel ctitle("ln_emp_f","shric=1") replace
 
 
-// run diff-in-diff regressions for emp_f
 
-
-forval i= 1(1)90 {
+forval i= 2(1)90 {
    display "shric=`i'"
    reg ln_emp_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
+   outreg2 using $tmp/urban_rural, excel ctitle("log_emp_f","shric=`i'") append
 }
 
 
@@ -569,6 +571,7 @@ forval i= 1(1)90 {
 forval i= 1(1)90 {
    display "shric=`i'"
    reg ln_count_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
+   outreg2 using $tmp/urban_rural, excel ctitle ("log_count_f","shric=`i'") append
 }
 
 // FOR ABSOLUTE NUMBERS
@@ -578,6 +581,7 @@ forval i= 1(1)90 {
 forval i= 1(1)90 {
    display "shric=`i'"
    reg emp_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
+   outreg2 using $tmp/urban_rural, excel ctitle ("emp_f","shric=`i'") append
 }
 
 // run diff-in-diff regressions for count_f
@@ -585,4 +589,5 @@ forval i= 1(1)90 {
 forval i= 1(1)90 {
    display "shric=`i'"
    reg count_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
+   outreg2 using $tmp/urban_rural, excel ctitle ("count_f","shric=`i'") append
 }
