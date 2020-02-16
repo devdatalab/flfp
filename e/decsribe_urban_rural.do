@@ -546,25 +546,94 @@ save $tmp/all_urban_rural_reshaped, replace
 //////////////////RELEVANT ANALYSIS BY SHRIC/////////////
 //======================================================//
 
+
 // generate interaction terms
 
 foreach var in yr1998 yr2005 yr2013 {
     gen urban_`var'=urban*`var'
 }
 
-// LOG REGRESSIONS
+// generate variables for share
+
+gen emp_f_share = emp_f/(emp_f+emp_m)
+
+gen count_f_share = count_f/(count_f+count_m)
+
+
+//*************************//
+///// GRAPHING WORK /////////
+//*************************//
+
+
+///////// BY TOTAl (ALL INDUSTRIES) /////////
+
+bysort region year: egen tot_emp_f=total(emp_f)
+bysort region year: egen tot_count_f=total(count_f)
+bysort region year: egen tot_emp_m=total(emp_m)
+bysort region year: egen tot_count_m=total(count_m)
+bysort region year: egen tot_emp_f_owner=total(emp_f_owner)
+bysort region year: egen tot_emp_m_owner=total(emp_m_owner)
+
+gen tot_emp_f_share = tot_emp_f/(tot_emp_f+tot_emp_m)
+gen tot_count_f_share = tot_count_f/(tot_count_f+tot_count_m)
+gen tot_emp_f_owner_share = tot_emp_f_owner/(tot_emp_f_owner+tot_emp_m_owner)
+
+// GRAPH CHANGE IN TOTAL EMPLOYMENT FOR FEMALES/MALES
+
+graph twoway line tot_emp_f year if urban==0 || line tot_emp_f year if urban==1 || line tot_emp_m year if urban==0 || line tot_emp_m year if urban==1, legend(label(1 "Rural, Female") label(2 "Urban, Female") label(3 "Rural, Male") label(4 "Urban, Male"))
+gr export totemp.pdf, replace as (pdf)
+
+// GRAPH CHANGE IN TOTAL EMPLOYMENT IN FEMALES/MALES OWNED FIRMS
+
+graph twoway line tot_emp_f_owner year if urban==0 || line tot_emp_f_owner year if urban==1 || line tot_emp_m_owner year if urban==0 || line tot_emp_m_owner year if urban==1, legend(label(1 "Rural, Female") label(2 "Urban, Female") label(3 "Rural, Male") label(4 "Urban, Male"))
+gr export totempowner.pdf, replace as (pdf)
+
+// GRAPH CHANGE IN SHARE IN TOTAL EMPLOYMENT IN FEMALES/MALES OWNED FIRMS
+
+graph twoway line tot_emp_f_owner_share year if urban==0 || line tot_emp_f_owner_share year if urban==1, legend(label(1 "Rural, Female") label(2 "Urban, Female"))
+gr export totempownershare.pdf, replace as (pdf)
+
+// GRAPHING CHANGE IN TOTAL FEMALE EMPLOYMENT SHARE
+
+graph twoway line tot_emp_f_share year if urban==0 || line tot_emp_f_share year if urban==1, legend(label(1 "Rural") label(2 "Urban"))
+gr export totempfshare.pdf, replace as (pdf)
+
+// GRAPHING CHANGE IN TOTAL FEMALE OWNERSHIP SHARE
+
+graph twoway line tot_count_f_share year if urban==0 || line tot_count_f_share year if urban==1, legend(label(1 "Rural") label(2 "Urban"))
+gr export totcountfshare.pdf, replace as (pdf)
+
+//////// BY INDUSTRY //////////
+
+graph twoway line emp_f_share year if urban==0 || line emp_f_share year if urban==1, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban"))
+gr export empfshare.pdf, replace as (pdf)
+
+graph twoway line count_f_share year if urban==0 || line count_f_share year if urban==1, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban"))
+gr export countfshare.pdf, replace as (pdf)
+
+graph twoway line emp_f_owner_share year if urban==0 || line emp_f_owner_share year if urban==1, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban"))
+gr export empfownershare.pdf, replace as (pdf)
+
+//*************************//
+//// REGRESSION ANALYSIS ////
+//*************************//
+
+sort shric year region
+		
+// FOR LOG EMPLOYMENT
+
+
+// run diff-in-diff regressions for emp_f
+
 
 reg ln_emp_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==1
 outreg2 using $tmp/urban_rural, excel ctitle("ln_emp_f","shric=1") replace
-
-
 
 forval i= 2(1)90 {
    display "shric=`i'"
    reg ln_emp_f yr1998 yr2005 yr2013 urban urban_yr1998 urban_yr2005 urban_yr2013 if shric==`i'
    outreg2 using $tmp/urban_rural, excel ctitle("log_emp_f","shric=`i'") append
 }
-
 
 // run diff-in-diff regressions for count_f
 
