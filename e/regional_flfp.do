@@ -72,14 +72,19 @@ reg count_f c.count_total##i.year i.north_india_dummy##i.year, robust
 
 reg count_f c.count_total##i.year i.hindi_belt_dummy##i.year, robust	
 
-/* graphing the results of the first three regressions, with population control */
+/* regressions of female employment by year and region, controlling for total employment and saving prediction results */
+reg emp_f c.emp_total##i.year
+predict xb_india, xb
 reg emp_f c.emp_total##i.year if south_india_dummy == 1
 predict xb_southindia, xb
 reg emp_f c.emp_total##i.year if north_india_dummy == 1
 predict xb_northindia, xb
 reg emp_f c.emp_total##i.year if hindi_belt_dummy == 1
 predict xb_hindibelt, xb
-twoway (scatter xb_southindia year, mcolor(red)) ///
+
+/* graphing the prior regressions */
+twoway (qfit xb_india year, lcolor(black)) ///
+	(scatter xb_southindia year, mcolor(red)) ///
 	(qfit xb_southindia year, lcolor(red)) ///
 	(scatter xb_northindia year, mcolor(blue)) ///
 	(qfit xb_northindia year, lcolor(blue)) ///
@@ -88,5 +93,6 @@ twoway (scatter xb_southindia year, mcolor(red)) ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("Female Employment") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
-	legend(label(1 South India) label(2 South India Fitted) label(3 North India) ///
-	label(4 North India Fitted) label(5 Hindi Belt) label(6 Hindi Belt Fitted))
+	legend(label(1 India (Total)) label(2 South India) ///
+	label(3 South India Fitted) label(4 North India) ///
+	label(5 North India Fitted) label(6 Hindi Belt) label(7 Hindi Belt Fitted))
