@@ -56,21 +56,12 @@ use $tmp/regional_flfp_collapse
 /* generate "total employment" variable */
 gen emp_total = emp_f + emp_m
 
-/* generate "total employment" variable */
-gen count_total = count_f + count_m + count_o
-
 /* run regressions of female employment on regional dummies by year */
 reg emp_f c.emp_total##i.year i.south_india_dummy##i.year, robust
 
 reg emp_f c.emp_total##i.year i.north_india_dummy##i.year, robust
 
-reg emp_f c.emp_total##i.year i.hindi_belt_dummy##i.year, robust
-
-reg count_f c.count_total##i.year i.south_india_dummy##i.year, robust 
-
-reg count_f c.count_total##i.year i.north_india_dummy##i.year, robust
-
-reg count_f c.count_total##i.year i.hindi_belt_dummy##i.year, robust	
+reg emp_f c.emp_total##i.year i.hindi_belt_dummy##i.year, robust	
 
 /* regressions of female employment by year and region, controlling for total employment and saving prediction results */
 reg emp_f c.emp_total##i.year
@@ -92,6 +83,38 @@ twoway (qfit xb_india year, lcolor(black)) ///
 	(qfit xb_hindibelt year, lcolor(yellow)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("Female Employment") ///
+	ylabel(, angle(0) format(%9.2f) nogrid) ///
+	legend(label(1 India (Total)) label(2 South India) ///
+	label(3 South India Fitted) label(4 North India) ///
+	label(5 North India Fitted) label(6 Hindi Belt) label(7 Hindi Belt Fitted))
+
+/* run it back, but now observing female firm owner numbers */
+use $tmp/regional_flfp_collapse, clear
+drop if year==1990
+
+/* generate "total employment" variable */
+gen emp_total = emp_f + emp_m
+
+/* similar set of regressions, but for employees with female bosses */
+reg emp_f_owner c.emp_total##i.year
+predict xb_india, xb
+reg emp_f_owner c.emp_total##i.year if south_india_dummy == 1
+predict xb_southindia, xb
+reg emp_f_owner c.emp_total##i.year if north_india_dummy == 1
+predict xb_northindia, xb
+reg emp_f_owner c.emp_total##i.year if hindi_belt_dummy == 1
+predict xb_hindibelt, xb
+
+/* graphing the prior regressions */
+twoway (qfit xb_india year, lcolor(black)) ///
+	(scatter xb_southindia year, mcolor(red)) ///
+	(qfit xb_southindia year, lcolor(red)) ///
+	(scatter xb_northindia year, mcolor(blue)) ///
+	(qfit xb_northindia year, lcolor(blue)) ///
+	(scatter xb_hindibelt year, mcolor(yellow)) ///
+	(qfit xb_hindibelt year, lcolor(yellow)), ///
+	graphregion(color(white)) ///
+	xtitle("Year") ytitle("Employees with Female Firm Owners") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
 	legend(label(1 India (Total)) label(2 South India) ///
 	label(3 South India Fitted) label(4 North India) ///
