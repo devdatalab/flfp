@@ -104,12 +104,11 @@ gsort - emp_m_owner	//Sort by total employment in male owned firms in descending
 list shric_desc emp_m_owner in 1/10, string(40) //Display top 10 industries by employment in male owned firms
 
 ren emp_f emp_f_13
+ren emp_m emp_m_13
 ren count_m count_m_13
 ren count_f count_f_13
 ren emp_m_owner emp_m_owner_13
 ren emp_f_owner emp_f_owner_13
-
-
 ren emp_o_owner emp_o_owner_13
 
 /* save temporary file */
@@ -160,6 +159,7 @@ gsort - emp_m_owner	//Sort by total employment in male owned firms in descending
 list shric_desc emp_m_owner in 1/10, string(40) //Display top 10 industries by employment in male owned firms
 
 ren emp_f emp_f_05
+ren emp_m emp_m_05
 ren count_m count_m_05
 ren count_f count_f_05
 ren emp_m_owner emp_m_owner_05
@@ -167,7 +167,7 @@ ren emp_f_owner emp_f_owner_05
 ren emp_o_owner emp_o_owner_05
 
 merge 1:1 shric using $tmp/ec_13_industry.dta //Merge onto saved results from EC13
-drop _merge emp_m emp_total
+drop _merge emp_total
 
 save $tmp/ec_13_05_industry.dta, replace
 
@@ -216,13 +216,14 @@ list shric_desc emp_m_owner in 1/10, string(40) //Display top 10 industries by e
 
 
 ren emp_f emp_f_98
+ren emp_m emp_m_98
 ren count_m count_m_98
 ren count_f count_f_98
 ren emp_m_owner emp_m_owner_98
 ren emp_f_owner emp_f_owner_98
 ren emp_o_owner emp_o_owner_98
 
-drop emp_m emp_total
+drop emp_total
 merge 1:1 shric using $tmp/ec_13_05_industry.dta //Merge onto saved results from EC13 and EC05
 drop _merge
 
@@ -272,13 +273,15 @@ list shric_desc emp_m_owner in 1/10, string(40) //Display top 10 industries by e
 
 
 ren emp_f emp_f_90
+ren emp_m emp_m_90
 ren count_m count_m_90
 ren count_f count_f_90
 ren emp_m_owner emp_m_owner_90
 ren emp_f_owner emp_f_owner_90
 ren emp_o_owner emp_o_owner_90
 
-drop emp_m emp_total
+drop emp_total
+
 merge 1:1 shric using $tmp/ec13050_industry.dta //Merge onto saved results from EC13,05and 98
 drop _merge
 
