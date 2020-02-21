@@ -1,5 +1,6 @@
 // working do file to check emp_f_share
 
+
 use $flfp/ec_flfp_13.dta, clear
 
 /* drop any observations without "shric" or "shrid" */
@@ -93,6 +94,13 @@ drop _merge
 
 save $tmp/work/ec90new.dta, replace
 
+*/
+
+use $tmp/work/ec90new.dta, clear
+
+merge 1:1 shric using $flfp/shric_descriptions.dta
+
+
 // Reshape to make shric-year pairs
 
 reshape long emp_f emp_m, i(shric) j(year)
@@ -107,6 +115,15 @@ replace year = 2013 if year == 13
 
 gen share = emp_f/(emp_m+emp_f)
 
+sort shric year
+
+// Graph by industry
+
+graph twoway line share year, by(shric_desc)
+graph export $tmp/work/empfindustry.pdf, replace as(pdf)
+
+// Total emp_f
+
 // Gen total variables
 
 bysort year: egen tot_emp_f=total(emp_f)
@@ -114,10 +131,8 @@ bysort year: egen tot_emp_m=total(emp_m)
 
 gen tot_emp_f_share = tot_emp_f/(tot_emp_f+tot_emp_m)
 
-
-// graph
+// Graph total emp_f
 
 line tot_emp_f_share year, title( Female Employment Share by Year)
 graph export $tmp/work/empf.png, replace as(png)
-
 
