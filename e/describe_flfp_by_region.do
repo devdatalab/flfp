@@ -1,7 +1,6 @@
 ** This do file describes the relationship between female employment and region **
 
 /* set global macro */
-global iec1 /Users/philiplindsay/Documents/Research/Novosad/iec1
 global flfp $iec1/flfp
 
 /* merge every EC dataset, '90-'13 */
@@ -17,7 +16,7 @@ foreach y in 1998 2005 2013 {
 }
 
 /* collapse by year and shrid */
-collapse (sum) emp_m emp_f count_m count_f count_o emp_m_owner emp_f_owner emp_o_owner, by (year shrid)
+collapse (sum) emp_m emp_f emp_m_owner emp_f_owner emp_o_owner, by (year shrid)
 
 /* save the collapsed dataset as a temporary file and open it again */
 save $tmp/regional_flfp_collapse, replace
@@ -46,7 +45,7 @@ replace hindi_belt_dummy = 1 if inlist(state_name, "bihar", "chhattisgarh", "nct
 "rajasthan", "uttar pradesh", "uttarakhand")
 
 /* collapse again, but now with the regional dummies */
-collapse (sum) emp_m emp_f count_m count_f count_o emp_m_owner emp_f_owner ///
+collapse (sum) emp_m emp_f emp_m_owner emp_f_owner ///
  emp_o_owner, by (state_name year south_india_dummy north_india_dummy hindi_belt_dummy)
  
 /* save the collapsed dataset as a temporary file and open it again */
