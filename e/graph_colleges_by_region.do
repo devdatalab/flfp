@@ -1,6 +1,7 @@
 ** This do file describes the relationship between female employment and ownership with regard to population sizes **
 
 /* set global macro */
+global iec1 /Users/philiplindsay/Documents/Research/Novosad/iec1
 global flfp $iec1/flfp
 
 //Load EC90
@@ -14,11 +15,11 @@ foreach y in 2001 2011 {
 }
 
 /* collapse by year and shrid */
-collapse (sum) pc*_td_college, by (year shrid)
+collapse (sum) pc*_td_p_sch pc*_td_m_sch, by (year shrid)
 
 /* save the collapsed dataset as a temporary file and open it again */
-save $tmp/college_collapse, replace
-use $tmp/college_collapse, clear
+save $tmp/school_collapse, replace
+use $tmp/school_collapse, clear
 
 /* merge to the shrug names dataset */
 merge m:1 shrid using $flfp/shrug_names.dta
@@ -26,38 +27,45 @@ merge m:1 shrid using $flfp/shrug_names.dta
 /* drop any observations without shrid */
 drop if shrid == ""
 
-/* encode South India dummy */
-gen south_india_dummy = 0
-replace south_india_dummy = 1 if inlist(state_name, "andaman nicobar islands", "andhra pradesh", ///
+/* create regional dummy */
+gen region = .
+
+/* code South Indian states */
+replace region = 0 if inlist(state_name, "andaman nicobar islands", "andhra pradesh", ///
  "karnataka", "kerala", "lakshadweep", "puducherry", "tamil nadu")
-
-/* encode North India dummy */
-gen north_india_dummy = 0
-replace north_india_dummy = 1 if inlist(state_name, "cahndigarh", "nct of delhi", "haryana", ///
+ 
+/* code North Indian states */
+ replace region = 1 if inlist(state_name, "cahndigarh", "nct of delhi", "haryana", ///
  "himachal pradesh", "jammu kashmir", "punjab", "rajasthan", "uttarakhand", "uttar pradesh")
-
-/* encode Hindi Belt dummy */
-gen hindi_belt_dummy = 0
-replace hindi_belt_dummy = 1 if inlist(state_name, "bihar", "chhattisgarh", "nct of delhi", ///
-"haryana", "himachal pradesh", "jharkand") | inlist(state_name, "madhya pradesh", ///
-"rajasthan", "uttar pradesh", "uttarakhand")
+ 
+ /* label "region" variable values */
+label define region 0 "South India" 1 "North India"
 
 /* collapse again, but now with the regional dummies */
-collapse (sum) pc*_td_college, by (state_name year south_india_dummy north_india_dummy hindi_belt_dummy)
+collapse (sum) pc*_td_p_sch pc*_td_m_sch, by (year region)
  
 /* save the collapsed dataset as a temporary file and open it again */
-save $tmp/regional_flfp_collapse, replace
-use $tmp/regional_flfp_collapse, clear
+save $tmp/school_collapse, replace
+use $tmp/school_collapse, clear
 
 /* consolidate college variables */
-egen college = rowtotal(pc91_td_college pc01_td_college pc11_td_college)
+egen td_p_sch = rowtotal(pc91_td_p_sch pc01_td_p_sch pc11_td_p_sch)
+egen td_m_sch = rowtotal(pc91_td_m_sch pc01_td_m_sch pc11_td_m_sch)
 
-/* graphing the prior regressions */
-twoway (qfit college year if south_india_dummy==1, lcolor(red)) ///
-	(qfit college year if north_india_dummy==1, lcolor(blue)) ///
-	(qfit college year if hindi_belt_dummy==1, lcolor(green)), ///
+/* graph the relationship between p_sch and year by region */
+twoway (scatter td_p_sch year, mcolor(black)) ///
+	(scatter td_p_sch year if region == 0, mcolor(red)) ///
+	(scatter td_p_sch year if region == 1, mcolor(blue)), ///
 	graphregion(color(white)) ///
-	xtitle("Year") ytitle("Number of Colleges") ///
+	xtitle("Year") ytitle("td_p_sch") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
-	legend(label(1 South India) label(2 North India) ///
-	label(3 Hindi Belt))
+	legend(label(1 India (Total)) label(2 South India) label(3 North India))
+	
+/* graph the relationship between m_sch and year by region */
+twoway (scatter td_m_sch year, mcolor(black)) ///
+	(scatter td_m_sch year if region == 0, mcolor(red)) ///
+	(scatter td_m_sch year if region == 1, mcolor(blue)), ///
+	graphregion(color(white)) ///
+	xtitle("Year") ytitle("td_m_sch") ///
+	ylabel(, angle(0) format(%9.2f) nogrid) ///
+	legend(label(1 India (Total)) label(2 South India) label(3 North India))
