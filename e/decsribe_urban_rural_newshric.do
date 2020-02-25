@@ -3,11 +3,31 @@
 
 global flfp $dir/FLFP/flfp
 
+
+*************************************************************
+////// FEMALE EMPLOYMENT AND ENTREPRENEURSHIP BY REGION /////
+*************************************************************
+
+*************************************************************
+///////////////////// TABLE OF CONTENTS /////////////////////
+*************************************************************
+//1. Merge EC13, 05, 98, 90 with shrids from most recent PCs/
+//2. Generate graphs, total and by industry//////////////////
+//3. Run diff-in-diff regressions for slope estimates////////
+*************************************************************
+
+
+*************************************************************
+//1. Merge EC13, 05, 98, 90 with shrids from most recent PCs/
+*************************************************************
+
+
 //***********************************//
 //Create Rural-Urban Dataset for 2013//
 //***********************************//
 
 // create data set for urban
+
 
 /* load ec13 */
 use $flfp/ec_flfp_13.dta, clear
@@ -111,12 +131,9 @@ drop _merge
 save $tmp/ec13_pc11_rural_urban, replace
 
 
-
-//=======================================================//
-
-
-// Note: The following commands construct rural-urban datasets for EC05, EC98 and EC90, as previosuly done for EC13.
-
+*******************************************************************************************************************
+// Note: The following commands construct rural-urban datasets for EC05, EC98 and EC90, as previosuly done for EC13
+*******************************************************************************************************************
 
 //***********************************//
 //Create Rural-Urban Dataset for 2005//
@@ -324,9 +341,6 @@ drop _merge
 
 save $tmp/ec98_pc01_rural_urban, replace
 
-
-
-//=======================================================//
 //***********************************//
 //Create Rural-Urban Dataset for 1991//
 //***********************************//
@@ -457,10 +471,11 @@ drop if shric==.
 
 save $tmp/all_urban_rural, replace
 
+*/
 
-//======================================================/
-/////RESHAPING & CREATING DUMMIES FOR YEARS AND REGION///
-//======================================================//
+//*****************************************************//
+//**RESHAPING & CREATING DUMMIES FOR YEARS AND REGION**//
+//*****************************************************//
 
 use $tmp/all_urban_rural.dta, clear
 
@@ -542,9 +557,9 @@ drop _merge
 save $tmp/all_urban_rural_reshaped, replace
 
 
-//======================================================/
-//////////////////RELEVANT ANALYSIS BY SHRIC/////////////
-//======================================================//
+//*************************/
+//GENERATE ADDL. VARIBLES*//
+//*************************/
 
 
 // generate interaction terms
@@ -555,7 +570,7 @@ foreach var in yr1998 yr2005 yr2013 {
 
 // Merge with newly created shric database
 
-merge m:1 shric using $tmp/new_shric_desc.dta
+merge m:1 shric using $tmp/new_shric_descriptions.dta
 
 drop _merge shric shric_desc
 
@@ -578,12 +593,16 @@ gen count_f_share = count_f/(count_f+count_m)
 
 gen emp_f_owner_share = emp_f_owner/(emp_f_owner+emp_m_owner)
 
-//*************************//
-///// GRAPHING WORK /////////
-//*************************//
 
 
-///////// BY TOTAl (ALL INDUSTRIES) /////////
+//************************************//
+//***********GRAPHING WORK ***********//
+//************************************//
+
+
+****************************
+****** ALL INDUSTRIES ******
+****************************
 
 bysort region year: egen tot_emp_f=total(emp_f)
 bysort region year: egen tot_count_f=total(count_f)
@@ -596,56 +615,51 @@ gen tot_emp_f_share = tot_emp_f/(tot_emp_f+tot_emp_m)
 gen tot_count_f_share = tot_count_f/(tot_count_f+tot_count_m)
 gen tot_emp_f_owner_share = tot_emp_f_owner/(tot_emp_f_owner+tot_emp_m_owner)
 
-
-// // GRAPH CHANGE IN TOTAL EMPLOYMENT FOR FEMALES/MALES
-
-graph twoway line tot_emp_f year if urban==0 || line tot_emp_f year if urban==1 || line tot_emp_m year if urban==0 || line tot_emp_m year if urban==1, legend(label(1 "Rural, Female") label(2 "Urban, Female") label(3 "Rural, Male") label(4 "Urban, Male"))
-gr export $graphs/new/totempnew.pdf, replace as (pdf)
-
-// GRAPH CHANGE IN TOTAL EMPLOYMENT IN FEMALES/MALES OWNED FIRMS
-
-graph twoway line tot_emp_f_owner year if urban==0 || line tot_emp_f_owner year if urban==1 || line tot_emp_m_owner year if urban==0 || line tot_emp_m_owner year if urban==1, legend(label(1 "Rural, Female") label(2 "Urban, Female") label(3 "Rural, Male") label(4 "Urban, Male"))
-gr export $graphs/new/totempownernew.pdf, replace as (pdf)
-
-// GRAPH CHANGE IN SHARE IN TOTAL EMPLOYMENT IN FEMALES/MALES OWNED FIRMS
-
-graph twoway line tot_emp_f_owner_share year if urban==0 || line tot_emp_f_owner_share year if urban==1, legend(label(1 "Rural, Female") label(2 "Urban, Female"))
-gr export $graphs/new/totempownersharenew.pdf, replace as (pdf)
-
 // GRAPHING CHANGE IN FEMALE EMPLOYMENT SHARE
 
-graph twoway line tot_emp_f_share year if urban==0 || line tot_emp_f_share year if urban==1, legend(label(1 "Rural") label(2 "Urban"))
-gr export $graphs/new/totempfsharenew.pdf, replace as (pdf)
+graph twoway line tot_emp_f_share year if urban==0 || line tot_emp_f_share year if urban==1, legend(label(1 "Rural") label(2 "Urban")) title( Female Employment Share by Year) xtitle(Year) ytitle(Female Employment Share)
+gr export $graphs/new/totempfsharenew.png, replace as (png)
 
 // GRAPHING CHANGE IN FEMALE OWNERSHIP SHARE
 
-graph twoway line tot_count_f_share year if urban==0 & year~=1990  || line tot_count_f_share year if urban==1 & year~=1990, legend(label(1 "Rural") label(2 "Urban"))
-gr export $graphs/new/totcountfsharenew.pdf, replace as (pdf)
-
+graph twoway line tot_count_f_share year if urban==0 & year~=1990  || line tot_count_f_share year if urban==1 & year~=1990, legend(label(1 "Rural") label(2 "Urban")) title( Female Ownership Share by Year) xtitle(Year) ytitle(Female Ownership Share)
+gr export $graphs/new/totcountfsharenew.png, replace as (png)
 
 // GRAPHING CHANGE IN EMPLOYMENT IN FEMALE OWNED SHARE
 
-graph twoway line tot_emp_f_owner_share year if urban==0 & year~=1990 || line tot_emp_f_owner_share year if urban==1 & year~=1990, legend(label(1 "Rural") label(2 "Urban"))
-gr export $graphs/new/totempfownertsharenew.pdf, replace as (pdf)
+graph twoway line tot_emp_f_owner_share year if urban==0 & year~=1990 || line tot_emp_f_owner_share year if urban==1 & year~=1990, legend(label(1 "Rural") label(2 "Urban")) title(Employment in Female Owned Firms Share by Year) xtitle(Year) ytitle(Employment in Female Owned Firms Share)
+gr export $graphs/new/totempfownertsharenew.png, replace as (png)
 
-////////////// BY EVERY INDUSTRY ////////////////////
+****************************
+******* BY INDUSTRY ********
+****************************
 
-graph twoway line emp_f_share year if urban==0 || line emp_f_share year if urban==1, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban"))
-gr export $graphs/new/empfsharenew.pdf, replace as (pdf)
+// GRAPHING CHANGE IN FEMALE EMPLOYMENT SHARE
 
-graph twoway line count_f_share year if urban==0 & year~=1990 || line count_f_share year if urban==1 & year~=1990, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban"))
-gr export $graphs/new/countfsharenew.pdf, replace as (pdf)
+graph twoway line emp_f_share year if urban==0 || line emp_f_share year if urban==1, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban")) xtitle(Year) ytitle(Female Employment Share)
+gr export $graphs/new/empfsharenew.png, replace as(png) width(16000) height(13000)
 
-graph twoway line emp_f_owner_share year if urban==0 & year~=1990 || line emp_f_owner_share year if urban==1 & year~=1990, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban"))
-gr export $graphs/new/empfownersharenew.pdf, replace as (pdf)
+// GRAPHING CHANGE IN FEMALE OWNERSHIP SHARE
 
-//*************************//
-//// REGRESSION ANALYSIS ////
-//*************************//
+graph twoway line count_f_share year if urban==0 & year~=1990 || line count_f_share year if urban==1 & year~=1990, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban")) xtitle(Year) ytitle(Female Ownership Share)
+gr export $graphs/new/countfsharenew.png, replace as(png) width(16000) height(13000)
+
+// GRAPHING CHANGE IN EMPLOYMENT IN FEMALE OWNED SHARE
+
+graph twoway line emp_f_owner_share year if urban==0 & year~=1990 || line emp_f_owner_share year if urban==1 & year~=1990, sort by(shric_desc) legend(label(1 "Rural") label(2 "Urban")) xtitle(Year) ytitle(Employment in Female Owned Firms Share)
+gr export $graphs/new/empfownersharenew.png, replace as(png) width(16000) height(13000)
+
+
+
+//************************************//
+//******* REGRESSION ANALYSIS ********//
+//************************************//
 
 sort shric year region
-		
-// FOR LOG EMPLOYMENT
+
+*****************************	
+********FOR LOG VALUES*******
+*****************************
 
 
 // run diff-in-diff regressions for emp_f
@@ -668,7 +682,9 @@ forval i= 1(1)90 {
    outreg2 using $tmp/urban_rural, excel ctitle ("log_count_f","shric=`i'") append
 }
 
-// FOR ABSOLUTE NUMBERS
+*****************************
+*****FOR ABSOLUTE VALUES*****
+*****************************
 
 // run diff-in-diff regressions for emp_f
 

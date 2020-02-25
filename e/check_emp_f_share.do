@@ -1,6 +1,6 @@
 // working do file to check emp_f_share
 
-
+/*
 use $flfp/ec_flfp_13.dta, clear
 
 /* drop any observations without "shric" or "shrid" */
@@ -119,8 +119,8 @@ sort shric year
 
 // Graph by industry
 
-graph twoway line share year, by(shric_desc)
-graph export $tmp/work/empfindustry.pdf, replace as(pdf)
+graph twoway line share year, by(shric_desc) xtitle(Year) ytitle(Female Employment Share)
+graph export $tmp/work/empfindustry90.png, replace as(png) width(16000) height(16000)
 
 // Total emp_f
 
