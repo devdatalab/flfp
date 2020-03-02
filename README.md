@@ -46,6 +46,11 @@ create `ec_flfp_icat_india.dta`, `ec_flfp_icat_ur.dta` (for
 urban/rural split), and any other regional categorizations that we
 need.
 
+`merge_ecpc_flfp.do`: This merges the village/town-collapsed economic
+census (`ec_flfp_shrid.dta`) with a set of variables from the
+SHRUG-population census for analysis where we want to link EC and
+SHRUG. This should save `flfp_ecpc.dta`.
+
 `make_flfp.do`: this should be a file in the root folder that runs all
 the build files in the correct order. A user should be able to run
 `make_flfp.do`, and then run any of the analysis files without
