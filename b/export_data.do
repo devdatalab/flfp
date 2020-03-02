@@ -8,6 +8,7 @@ cap mkdir $flfp/shrug
 foreach y in 90 98 05 13 {
   shell rsync $tmp/ec_flfp_`y'.dta $flfp
 }
+shell rsync $tmp/ec_flfp_all_years.dta $flfp
 
 /* export shric descriptions */
 shell rsync $shrug/keys/shric_descriptions.dta $flfp/shrug

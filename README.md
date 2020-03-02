@@ -119,4 +119,26 @@ used to estimate FLFP, but it is only representative at the district
 level, so we can't match it to local labor markets or to narrow
 industries.
 
-# 
+# Coding Style
+
+Please adhere to a common coding style following that used in the
+`nss-clean` repo in the prior work. This include, among other things:
+
+1. All variables and strings are always lowercase, even
+   abbrevations. Use `rename *, lower` when importing external data
+   with any upper case.
+
+2. Every line of code is preceded by a blank line and a comment
+   line. It should be possible to read an entire code file and
+   understand it by looking only at the comments.
+   
+3. Put spaces around all operators, i.e. `5 * emp_all`, not
+   `5*emp_all`.
+   
+4. Every path in the code should begin either with `$flfp` or
+   `$tmp`. Do not use absolute or relative path names and do not use
+   `cd`. This ensures the code will run the same on all machines. Set
+   `$flfp` and `$tmp` in `profile.do`. You can create `profile.do` in
+   the PERSONAL folder given by the Stata command
+   `sysdir`. `profile.do` will be run every time you open Stata.
+   
