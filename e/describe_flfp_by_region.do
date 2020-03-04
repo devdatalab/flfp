@@ -11,9 +11,12 @@ foreach y in 1998 2005 2013 {
   replace year = 1998 if mi(year)
   append using $flfp/ec_flfp_05
   replace year = 2005 if mi(year)
-  append using $flfp/ec_flfp_98
+  append using $flfp/ec_flfp_13
   replace year = 2013 if mi(year)
 }
+
+/* drop any observations without shric */
+drop if shric == .
 
 /* collapse by year and shrid */
 collapse (sum) emp_m emp_f emp_m_owner emp_f_owner emp_o_owner, by (year shrid)
@@ -48,21 +51,18 @@ replace hindi_belt_dummy = 1 if inlist(state_name, "bihar", "chhattisgarh", "nct
 /* label "region" variable values */
 label define region 0 "South India" 1 "North India"
 
-/* generate "total employment" variable */
-gen total_emp = emp_f + emp_m
-
-/* generate "total owner employment" variable */
-gen total_emp_owner = emp_m_owner + emp_f_owner + emp_o_owner
-
 /* collapse again, but now with the regional dummies */
-collapse (sum) emp_f emp_f_owner total_emp total_emp_owner, by (year region)
+collapse (sum) emp_f emp_m emp_m_owner emp_f_owner emp_o_owner, by (year region)
+
+/* generate "female employment share" variable */
+gen f_emp_share = (emp_f / (emp_f + emp_m))
+
+/* generate "female owner employment share" variable */
+gen f_emp_owner_share = (emp_f_owner / (emp_m_owner + emp_f_owner + emp_o_owner))
  
 /* save the collapsed dataset as a temporary file and open it again */
 save $tmp/regional_flfp_collapse, replace
-use $tmp/regional_flfp_collapse	
-
-/* generate "female employment share" variable */
-gen f_emp_share = (emp_f / total_emp)
+use $tmp/regional_flfp_collapse, clear
 
 /* graph the relationship between year and female employment share, by region */
 twoway (scatter f_emp_share year, mcolor(black)) ///
@@ -76,9 +76,6 @@ twoway (scatter f_emp_share year, mcolor(black)) ///
 /* run it back, but now observing female firm owner numbers */
 use $tmp/regional_flfp_collapse, clear
 drop if year==1990
-
-/* generate "female owner employment share" variable */
-gen f_emp_owner_share = (emp_f_owner / total_emp_owner)
 
 /* graph the relationship between year and female employment share, by region */
 twoway (scatter f_emp_owner_share year, mcolor(black)) ///
