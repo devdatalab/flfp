@@ -3,6 +3,11 @@
 //*****CHECK MISSING SHRICS HYPOTHESIS****//
 ********************************************
 
+
+******************************
+//Merging datasets
+******************************
+
 // Use EC2013 as base dataset
 
 use $flfp/ec_flfp_13.dta, clear
@@ -125,7 +130,7 @@ save $tmp/work/ec90newshrid.dta, replace
 
 use $tmp/work/ec90newshrid.dta, clear
 
-*******************************
+
 ******************************
 //RESHAPING
 ******************************
@@ -154,6 +159,8 @@ save $tmp/work/ecnewshrid.dta, replace
 gen fshare= emp_f/(emp_m+emp_f)
 
 sort same year
+
+// graphing
 
 graph twoway line fshare year, title(Female Employment Share by Year) note(Drops only missing shrids.) ytitle(Female Share of Employment) xtitle(Year)
 graph export $tmp/work/missingshridsempf.png, replace as(png)
