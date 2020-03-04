@@ -1,24 +1,6 @@
 ** EC FLFP vs Population Analysis **
 
-use $flfp/ec_flfp_90, replace //Generate full dataset with EC year variable
-gen year = 1990		
-foreach y in 1998 2005 2013 {
-  append using $flfp/ec_flfp_98
-  replace year = 1998 if mi(year)
-  append using $flfp/ec_flfp_05
-  replace year = 2005 if mi(year)
-  append using $flfp/ec_flfp_13
-  replace year = 2013 if mi(year)
-}
-
-collapse (sum) count* emp*, by (shrid year) // Collapse by shrid and year so that we have all relevant EC data for each shrid-year pair
-
-foreach x in 91 01 11 {
-	merge m:1 shrid using $flfp/shrug_pc`x'_pca.dta
-	drop _merge 
-	gen pop_m_share_`x' = pc`x'_pca_tot_m/pc`x'_pca_tot_p
-	drop if pc`x'_pca_tot_p < 100
-	}
+use $flfp/flfp_ecpc.dta, clear
 
 //Generate FLFP share for each EC-shrid combination
 gen emp_f_share_90 = emp_f/(emp_f + emp_m) if year == 1990
