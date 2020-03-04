@@ -1,28 +1,6 @@
 **SCST Share**
 
-** Generate Dataset with years associated to each EC **
-use $flfp/ec_flfp_90, replace 
-gen year = 1990
-foreach y in 1998 2005 2013 {
-  append using $flfp/ec_flfp_98
-  replace year = 1998 if mi(year)
-  append using $flfp/ec_flfp_05
-  replace year = 2005 if mi(year)
-  append using $flfp/ec_flfp_13
-  replace year = 2013 if mi(year)
-}
-
-** Collapse all relevant indicators by shrid-year pair. This should give all relevant EC data for each shrid-year pair*
-collapse (sum) count* emp*, by (shrid year)
-
-use $tmp/collapsed_ec, replace	//Save into temporary file called collapsed_ec to avoid rerunning collapse
-
-** Merge PCs onto the dataset. This results in an shrid-year dataset with all PC data merged onto every observation **
-foreach x in 91 01 11 {
-	merge m:1 shrid using $flfp/shrug_pc`x'_pca.dta
-	drop _merge 
-	drop if pc`x'_pca_tot_p < 100 //Drop shrids with less than 100 people total
-	}
+use $flfp/flfp_ecpc.dta, clear //Use merged EC/PC dataset
 
 ** Generate FLFP share variables for each EC year **
 gen emp_f_share_90 = emp_f/(emp_f + emp_m) if year == 1990
