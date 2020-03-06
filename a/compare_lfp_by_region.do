@@ -36,9 +36,9 @@ save $tmp/flfp_regional_analysis.dta, replace
 use $tmp/flfp_regional_analysis.dta, clear
 
 /* graph the relationships of mlfp and flfp in each region */
-foreach i in (region==i) {
-	twoway (scatter emp_f_share year, mcolor(blue)) ///
-	(scatter emp_m_share year, mcolor(red)), ///
+forvalues y = 0/4 {
+	twoway (scatter emp_f_share year if region == 'y', mcolor(blue)) ///
+	(scatter emp_m_share year if region == 'y', mcolor(red)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("emp_share") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
