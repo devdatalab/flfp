@@ -87,27 +87,30 @@ merge m:1 shrid using $flfp/shrug_pc11_state_key.dta
 gen region = .
 
 /* code North states */
-replace region = 1 if inlist(pc11_state_name, "jammu kashmir", "himachal pradesh", "punjab",
+replace region = 1 if inlist(pc11_state_name, "jammu kashmir", "himachal pradesh", "punjab", ///
 "uttarakhand", "haryana")
  
 /* code South states */
  replace region = 2 if inlist(pc11_state_name, "karnataka", "andhra pradesh", "kerala", "tamil nadu")
  
 /* code North-East states */
-replace region = 3 if inlist(pc11_state_name, "arunachal pradesh", "assam", "nagaland", "meghalya",
+replace region = 3 if inlist(pc11_state_name, "arunachal pradesh", "assam", "nagaland", "meghalya", ///
 "manipur", "tripura", "mizoram")
 
 /* code Central states */
-replace region = 4 if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh",
-"gujarat", "jharkhand", "chattisgrah", "odisha", "west bengal", "maharashtra")
+replace region = 4 if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
+"gujarat", "jharkhand", "chattisgrah") | inlist(pc11_state_name, "odisha", "west bengal", "maharashtra")
  
 /* label "region" variable values */
 label define region 1 "north" 2 "south" 3 "north-east" 4 "central"
  
-/* Collapse by state name */
+/* Collapse by region */
 collapse (sum) count* emp*, by(region year)
 
-/* Drop yearless state observations */
+/* Drop yearless observations */
+drop if year == .
+
+/* Drop regionless observations */
 drop if year == .
 
 /* Generate relevant employment statistics */
