@@ -5,7 +5,8 @@
 /* A) SHRID Level Dataset */
 /* B) District Level Dataset */
 /* C) State Level Dataset */
-/* D) Region Level Dataset   */
+/* D) Region Level Dataset */
+/* E) Country Averages Dataset */
 
 /****************************/
 /* A) SHRID Level Dataset   */
@@ -120,3 +121,23 @@ gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
 
 /* Save to new state-level dataset */
 save $flfp/ec_flfp_state_level.dta, replace
+
+/*******************************************************************/
+/* E) Country Averages Dataset                                     */
+/* This is to be appended to the other data sets, to compare with  */
+/* national trends, avoiding weighting issues                      */
+/*******************************************************************/
+
+/* Load EC dataset with all years */
+use $flfp/ec_flfp_all_years.dta, clear
+
+/* Collapse by year */
+collapse (sum) count* emp*, by (year) 
+
+/* Generate relevant employment and ownership statistics */
+gen emp_f_share = emp_f/(emp_f + emp_m)
+gen count_f_share = count_f/(count_f + count_m)
+gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
+
+/* Save to country-wide dataset */
+save $flfp/ec_flfp_country_level.dta, replace
