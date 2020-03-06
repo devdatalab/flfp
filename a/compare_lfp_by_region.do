@@ -37,12 +37,20 @@ use $tmp/flfp_regional_analysis.dta, clear
 
 /* graph the relationships of mlfp and flfp in each region */
 forvalues y = 0/4 {
-	twoway (scatter emp_f_share year if region == 'y', mcolor(blue)) ///
-	(scatter emp_m_share year if region == 'y', mcolor(red)), ///
+	twoway (scatter emp_f_share year if region == `y', mcolor(blue)) ///
+	(scatter emp_m_share year if region == `y', mcolor(red)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("emp_share") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
-	legend(label(1 emp_f_share) label(2 emp_m_share))
+	legend(label(1 emp_f_share) label(2 emp_m_share)) ///
+	title(`y')
+	graph save `y'_regional_lfp, replace
 }
 
 /* combine graphs */
+graph combine 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
+3_regional_lfp.gph 4_regional_lfp.gph, xcommon ycommon ///
+title(Male Employment Share vs. Female Employment Share by Region)
+
+/* export graph */
+graph export $tmp/emp_share_comparison_regional_graph.pdf, replace
