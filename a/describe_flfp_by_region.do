@@ -17,6 +17,9 @@ use $flfp/ec_flfp_country_level.dta, clear
 /* create regional variable */
 gen region = 0
 
+/* label "region" variable values */
+label define region 0 "India (total)"
+
 /* merge with region-level dataset */
 append using $flfp/ec_flfp_region_level.dta
 

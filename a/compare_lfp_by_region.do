@@ -37,19 +37,21 @@ use $tmp/flfp_regional_analysis.dta, clear
 
 /* graph the relationships of mlfp and flfp in each region */
 forvalues y = 0/4 {
+	local z: variable label `x'
 	twoway (scatter emp_f_share year if region == `y', mcolor(blue)) ///
 	(scatter emp_m_share year if region == `y', mcolor(red)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("emp_share") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
 	legend(label(1 female) label(2 male)) ///
-	title(`y')
+	title("`y'")
 	graph save `y'_regional_lfp, replace
 }
 
 /* combine graphs */
 grc1leg 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
 3_regional_lfp.gph 4_regional_lfp.gph, legendfrom(0_regional_lfp.gph) ///
+ycommon xcommon ///
 title(Male Employment Share vs. Female Employment Share by Region)
 
 /* export graph */
@@ -80,6 +82,7 @@ forvalues y = 0/4 {
 /* combine graphs */
 grc1leg 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
 3_regional_lfp.gph 4_regional_lfp.gph, legendfrom(0_regional_lfp.gph) ///
+ycommon xcommon ///
 title("Male Employment Share vs. Female Employment" "Ownership Share by Region")
 
 /* export graph */
@@ -110,6 +113,7 @@ forvalues y = 0/4 {
 /* combine graphs */
 grc1leg 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
 3_regional_lfp.gph 4_regional_lfp.gph, legendfrom(0_regional_lfp.gph) ///
+ycommon xcommon ///
 title("Male Employment Share vs. Female Employment" "Count Share by Region")
 
 /* export graph */
