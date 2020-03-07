@@ -37,14 +37,13 @@ use $tmp/flfp_regional_analysis.dta, clear
 
 /* graph the relationships of mlfp and flfp in each region */
 forvalues y = 0/4 {
-	local z: variable label `x'
 	twoway (scatter emp_f_share year if region == `y', mcolor(blue)) ///
 	(scatter emp_m_share year if region == `y', mcolor(red)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("emp_share") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
 	legend(label(1 female) label(2 male)) ///
-	title("`y'")
+	title(`y')
 	graph save `y'_regional_lfp, replace
 }
 
