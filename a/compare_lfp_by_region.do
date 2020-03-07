@@ -48,8 +48,8 @@ forvalues y = 0/4 {
 }
 
 /* combine graphs */
-graph combine 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
-3_regional_lfp.gph 4_regional_lfp.gph, xcommon ycommon ///
+grc1leg 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
+3_regional_lfp.gph 4_regional_lfp.gph, legendfrom(0_regional_lfp.gph) ///
 title(Male Employment Share vs. Female Employment Share by Region)
 
 /* export graph */
@@ -78,9 +78,39 @@ forvalues y = 0/4 {
 }
 
 /* combine graphs */
-graph combine 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
-3_regional_lfp.gph 4_regional_lfp.gph, xcommon ycommon ///
+grc1leg 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
+3_regional_lfp.gph 4_regional_lfp.gph, legendfrom(0_regional_lfp.gph) ///
 title("Male Employment Share vs. Female Employment" "Ownership Share by Region")
 
 /* export graph */
 graph export $tmp/emp_ownership_share_comparison_regional_graph.pdf, replace
+
+/****************************************************/
+/* D) Female vs. male employment count share graph  */
+/****************************************************/
+
+/* open dataset */
+use $tmp/flfp_regional_analysis.dta, clear
+
+/* drop 1990, since f_emp_owner was not a variable in that dataset */
+drop if year==1990
+
+/* graph the relationships of mlfp and flfp in each region */
+forvalues y = 0/4 {
+	twoway (scatter count_f_share year if region == `y', mcolor(blue)) ///
+	(scatter count_m_share year if region == `y', mcolor(red)), ///
+	graphregion(color(white)) ///
+	xtitle("Year") ytitle("count_share") ///
+	ylabel(, angle(0) format(%9.2f) nogrid) ///
+	legend(label(1 female) label(2 male)) ///
+	title(`y')
+	graph save `y'_regional_lfp, replace
+}
+
+/* combine graphs */
+grc1leg 0_regional_lfp.gph 1_regional_lfp.gph 2_regional_lfp.gph ///
+3_regional_lfp.gph 4_regional_lfp.gph, legendfrom(0_regional_lfp.gph) ///
+title("Male Employment Share vs. Female Employment" "Count Share by Region")
+
+/* export graph */
+graph export $tmp/count_share_comparison_regional_graph.pdf, replace
