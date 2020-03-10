@@ -15,7 +15,7 @@
 use $flfp/ec_flfp_country_level.dta, clear
 
 /* create regional variable */
-gen str region = "india (total)"
+gen str region = "total"
 
 /* merge with region-level dataset */
 append using $flfp/ec_flfp_region_level.dta
@@ -31,7 +31,7 @@ save $tmp/flfp_regional_analysis.dta, replace
 use $tmp/flfp_regional_analysis.dta, clear
 
 /* graph the relationship between year and female employment share, by region */
-twoway (scatter emp_f_share year if region == "india (total)", mcolor(black)) ///
+twoway (scatter emp_f_share year if region == "total", mcolor(black)) ///
 	(scatter emp_f_share year if region == "north", mcolor(red)) ///
 	(scatter emp_f_share year if region == "south", mcolor(blue)) ///
 	(scatter emp_f_share year if region == "north-east", mcolor(green)) ///
@@ -57,7 +57,7 @@ use $tmp/flfp_regional_analysis.dta, clear
 drop if year==1990
 
 /* graph the relationship between year and female employment ownership share, by region */
-twoway (scatter emp_owner_f_share year if region == "india (total)", mcolor(black)) ///
+twoway (scatter emp_owner_f_share year if region == "total", mcolor(black)) ///
 	(scatter emp_owner_f_share year if region == "north", mcolor(red)) ///
 	(scatter emp_owner_f_share year if region == "south", mcolor(blue)) ///
 	(scatter emp_owner_f_share year if region == "north-east", mcolor(green)) ///
@@ -83,7 +83,7 @@ use $tmp/flfp_regional_analysis.dta, clear
 drop if year==1990
 
 /* graph the relationship between year and female employment ownership share, by region */
-twoway (scatter count_f_share year if region == "india (total)", mcolor(black)) ///
+twoway (scatter count_f_share year if region == "total", mcolor(black)) ///
 	(scatter count_f_share year if region == "north", mcolor(red)) ///
 	(scatter count_f_share year if region == "south", mcolor(blue)) ///
 	(scatter count_f_share year if region == "north-east", mcolor(green)) ///
