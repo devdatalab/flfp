@@ -15,10 +15,7 @@
 use $flfp/ec_flfp_country_level.dta, clear
 
 /* create regional variable */
-gen region = 0
-
-/* label "region" variable values */
-label define region 0 "India (total)"
+gen str region = "india (total)"
 
 /* merge with region-level dataset */
 append using $flfp/ec_flfp_region_level.dta
@@ -34,11 +31,11 @@ save $tmp/flfp_regional_analysis.dta, replace
 use $tmp/flfp_regional_analysis.dta, clear
 
 /* graph the relationship between year and female employment share, by region */
-twoway (scatter emp_f_share year if region == 0, mcolor(black)) ///
-	(scatter emp_f_share year if region == 1, mcolor(red)) ///
-	(scatter emp_f_share year if region == 2, mcolor(blue)) ///
-	(scatter emp_f_share year if region == 3, mcolor(green)) ///
-	(scatter emp_f_share year if region == 4, mcolor(orange)), ///
+twoway (scatter emp_f_share year if region == "india (total)", mcolor(black)) ///
+	(scatter emp_f_share year if region == "north", mcolor(red)) ///
+	(scatter emp_f_share year if region == "south", mcolor(blue)) ///
+	(scatter emp_f_share year if region == "north-east", mcolor(green)) ///
+	(scatter emp_f_share year if region == "central", mcolor(orange)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("emp_f_share") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
@@ -47,7 +44,7 @@ twoway (scatter emp_f_share year if region == 0, mcolor(black)) ///
 	title(Female Employment Share by Region)
 	
 /* export graph to temporary files */
-graph export $tmp/emp_f_share_regional_graph.pdf, replace
+graph export $tmp/emp_f_share_regional_graph.png, replace
 
 /**********************************************/
 /* C) Female employment ownership share graph */
@@ -60,11 +57,11 @@ use $tmp/flfp_regional_analysis.dta, clear
 drop if year==1990
 
 /* graph the relationship between year and female employment ownership share, by region */
-twoway (scatter emp_owner_f_share year if region == 0, mcolor(black)) ///
-	(scatter emp_owner_f_share year if region == 1, mcolor(red)) ///
-	(scatter emp_owner_f_share year if region == 2, mcolor(blue)) ///
-	(scatter emp_owner_f_share year if region == 3, mcolor(green)) ///
-	(scatter emp_owner_f_share year if region == 4, mcolor(orange)), ///
+twoway (scatter emp_owner_f_share year if region == "india (total)", mcolor(black)) ///
+	(scatter emp_owner_f_share year if region == "north", mcolor(red)) ///
+	(scatter emp_owner_f_share year if region == "south", mcolor(blue)) ///
+	(scatter emp_owner_f_share year if region == "north-east", mcolor(green)) ///
+	(scatter emp_owner_f_share year if region == "central", mcolor(orange)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("emp_owner_f_share") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
@@ -73,7 +70,7 @@ twoway (scatter emp_owner_f_share year if region == 0, mcolor(black)) ///
 	title(Female Employment Ownership Share by Region)
 	
 /* export graph to temporary files */
-graph export $tmp/emp_f_ownership_share_regional_graph.pdf, replace
+graph export $tmp/emp_f_ownership_share_regional_graph.png, replace
 
 /******************************************/
 /* D) Female employment count share graph */
@@ -86,11 +83,11 @@ use $tmp/flfp_regional_analysis.dta, clear
 drop if year==1990
 
 /* graph the relationship between year and female employment ownership share, by region */
-twoway (scatter count_f_share year if region == 0, mcolor(black)) ///
-	(scatter count_f_share year if region == 1, mcolor(red)) ///
-	(scatter count_f_share year if region == 2, mcolor(blue)) ///
-	(scatter count_f_share year if region == 3, mcolor(green)) ///
-	(scatter count_f_share year if region == 4, mcolor(orange)), ///
+twoway (scatter count_f_share year if region == "india (total)", mcolor(black)) ///
+	(scatter count_f_share year if region == "north", mcolor(red)) ///
+	(scatter count_f_share year if region == "south", mcolor(blue)) ///
+	(scatter count_f_share year if region == "north-east", mcolor(green)) ///
+	(scatter count_f_share year if region == "central", mcolor(orange)), ///
 	graphregion(color(white)) ///
 	xtitle("Year") ytitle("count_f_share") ///
 	ylabel(, angle(0) format(%9.2f) nogrid) ///
@@ -99,4 +96,4 @@ twoway (scatter count_f_share year if region == 0, mcolor(black)) ///
 	title(Female Employment Count Share by Region)
 	
 /* export graph to temporary files */
-graph export $tmp/count_f_share_regional_graph.pdf, replace
+graph export $tmp/count_f_share_regional_graph.png, replace

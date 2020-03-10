@@ -85,25 +85,22 @@ use $flfp/ec_flfp_all_years.dta, clear
 merge m:1 shrid using $flfp/shrug_pc11_state_key.dta
 
 /* create regional variable */
-gen region = .
+gen str13 region = "."
 
 /* code North states */
-replace region = 1 if inlist(pc11_state_name, "jammu kashmir", "himachal pradesh", "punjab", ///
+replace region = "north" if inlist(pc11_state_name, "jammu kashmir", "himachal pradesh", "punjab", ///
 "uttarakhand", "haryana")
  
 /* code South states */
- replace region = 2 if inlist(pc11_state_name, "karnataka", "andhra pradesh", "kerala", "tamil nadu")
+ replace region = "south" if inlist(pc11_state_name, "karnataka", "andhra pradesh", "kerala", "tamil nadu")
  
 /* code North-East states */
-replace region = 3 if inlist(pc11_state_name, "arunachal pradesh", "assam", "nagaland", "meghalya", ///
+replace region = "north-east" if inlist(pc11_state_name, "arunachal pradesh", "assam", "nagaland", "meghalya", ///
 "manipur", "tripura", "mizoram")
 
 /* code Central states */
-replace region = 4 if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
+replace region = "central" if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
 "gujarat", "jharkhand", "chattisgrah") | inlist(pc11_state_name, "odisha", "west bengal", "maharashtra")
- 
-/* label "region" variable values */
-label define region 1 "north" 2 "south" 3 "north-east" 4 "central"
  
 /* Collapse by region */
 collapse (sum) count* emp*, by(region year)
@@ -112,7 +109,7 @@ collapse (sum) count* emp*, by(region year)
 drop if year == .
 
 /* Drop regionless observations */
-drop if year == .
+drop if region == "."
 
 /* Generate relevant employment statistics */
 gen emp_f_share = emp_f/(emp_f + emp_m)
@@ -120,7 +117,7 @@ gen count_f_share = count_f/(count_f + count_m)
 gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
 
 /* Save to new state-level dataset */
-save $flfp/ec_flfp_state_level.dta, replace
+save $flfp/ec_flfp_region_level.dta, replace
 
 /*******************************************************************/
 /* E) Country Averages Dataset                                     */
