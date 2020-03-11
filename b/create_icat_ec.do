@@ -121,6 +121,12 @@ save $flfp/ec_flfp_icat.dta, replace
 /* D) Collapse at Urban/Rural Level */
 /************************************/
 
+/* drop all extraneous variables from PC to expedite merge */
+foreach x in 91 01 11 {	
+	use $flfp/shrug_pc`x'_pca.dta, clear
+	keep pc`x'_sector shrid
+}
+
 /* load EC by year dataset */
 use $flfp/ec_flfp_all_years.dta, clear
 
@@ -198,8 +204,8 @@ replace region = "north-east" if inlist(pc11_state_name, "arunachal pradesh", "a
 replace region = "central" if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
 "gujarat", "jharkhand", "chattisgrah") | inlist(pc11_state_name, "odisha", "west bengal", "maharashtra")
  
-/* Collapse by region */
-collapse (sum) count* emp*, by(region year)
+/* collapse by region, year, and ICAT */
+collapse (sum) count* emp*, by(region year icat)
 
 /* Drop yearless observations */
 drop if year == .
