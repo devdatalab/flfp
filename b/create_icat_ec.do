@@ -121,19 +121,27 @@ save $flfp/ec_flfp_icat.dta, replace
 /* D) Collapse at Urban/Rural Level */
 /************************************/
 
-/* drop all extraneous variables from PC to expedite merge */
-foreach x in 91 01 11 {	
+/* loop across every PC dataset */
+foreach x in 91 01 11 {
+
+/* open the datasets */
 	use $flfp/shrug_pc`x'_pca.dta, clear
+	
+/* keep only the sector (urban/rural) variable */
 	keep pc`x'_sector shrid
 }
 
 /* load EC by year dataset */
 use $flfp/ec_flfp_all_years.dta, clear
 
-/* merge all PC years onto all EC year */
+/* loop across all the PC datasets */
 foreach x in 91 01 11 {	
+
+/* merge each dataset using SHRID */
 	merge m:1 shrid using $flfp/shrug_pc`x'_pca.dta
-	drop _merge //Drop _merge to allow loop to continue
+	
+/* drop the _merge to allow the loop to continue */
+	drop _merge
 }
 	
 /* collapse relevant data by year and shric */

@@ -11,7 +11,9 @@ collapse (sum) count* emp*, by (year shrid)
 /* Merge all PC years onto all EC year */
 foreach x in 91 01 11 {	
 	merge m:1 shrid using $flfp/shrug_pc`x'_pca.dta
-	drop _merge //Drop _merge to allow loop to continue
+
+/* Drop _merge to allow loop to continue */
+	drop _merge
 	}
 
 /* Save to new dataset */

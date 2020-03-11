@@ -38,7 +38,7 @@ use $tmp/flfp_regional_analysis.dta, clear
 /* create levels so the loop will work across "region" (a string variable) */
 levelsof region, local(levels)
 
-/* graph lfp loop over the levels of region */
+/* loop over the levels of region */
 foreach 1 of local levels {
 	twoway (scatter emp_f_share year if region == "`1'", mcolor(blue)) ///
 	(scatter emp_m_share year if region == "`1'", mcolor(red)), ///
