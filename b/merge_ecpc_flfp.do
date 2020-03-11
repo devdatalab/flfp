@@ -5,7 +5,7 @@
 /* Load EC by year dataset */
 use $flfp/ec_flfp_all_years.dta, clear
 
-/* Collapse all relevant data (except shric) by year-shrid pair */
+/* Collapse all relevant data by year-shrid pair */
 collapse (sum) count* emp*, by (year shrid)
 
 /* Merge all PC years onto all EC year */
