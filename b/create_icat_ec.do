@@ -121,37 +121,32 @@ save $flfp/ec_flfp_icat.dta, replace
 /* D) Collapse at Urban/Rural Level */
 /************************************/
 
-/* loop across every PC dataset */
-foreach x in 91 01 11 {
+/* merge 2013 EC with 2011 PC */
+use $flfp/shrug_pc11_pca.dta, clear
+gen year = 2013
+merge m:1 shrid year using $flfp/ec_flfp_icat.dta
+drop _merge
 
-/* open the datasets */
-	use $flfp/shrug_pc`x'_pca.dta, clear
-	
-/* keep only the sector (urban/rural) variable */
-	keep pc`x'_sector shrid
-}
+/* save as temporary file */
+save $tmp/collapsed_ec_flfp_all_years.dta, replace
 
-/* load EC by year dataset */
-use $flfp/ec_flfp_all_years.dta, clear
+/* merge 2005 EC with 2001 PC */
+use $flfp/shrug_pc01_pca.dta, clear
+gen year = 2005
+merge m:1 shrid year using $tmp/temporary_ec_flfp_icat.dta
+drop _merge
 
-/* loop across all the PC datasets */
-foreach x in 91 01 11 {	
+/* save as temporary file */
+save $tmp/temporary_ec_flfp_icat.dta, replace
 
-/* merge each dataset using SHRID */
-	merge m:1 shrid using $flfp/shrug_pc`x'_pca.dta
-	
-/* drop the _merge to allow the loop to continue */
-	drop _merge
-}
-	
-/* collapse relevant data by year and shric */
-collapse (sum) count* emp*, by (year shric)
+/* merge 1990 EC with 1991 PC */
+use $flfp/shrug_pc91_pca.dta, clear
+gen year = 1990
+merge m:1 shrid year using $tmp/temporary_ec_flfp_icat.dta
+drop _merge
 
-/* save to new dataset */
-save $tmp/flfp_ecpc_with_shric.dta, replace
-
-/* merge with ICAT descriptions dataset */
-merge m:1 shric using $tmp/icat_descriptions.dta
+/* drop 1998, since we have no PC to match with it */
+drop if year == 1998
 
 /* drop if urban/rural classification is missing or classified as both urban and rural */
 drop if pc11_sector == . | 3
