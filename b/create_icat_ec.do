@@ -131,10 +131,17 @@ foreach x in 91 01 11 {
 	drop _merge
 }
 
-/* gen pop (t, m and f) long variable */
-gen popt = pc01_pca_tot_p if inlist(year, 1998, 2005)
-replace popt = pc11_pca_tot_p if year == 2013
-replace popt = pc91_pca_tot_p if year == 1990
+/* gen pop (total, male and female) long variable */
+
+foreach x in m f p {
+   gen pop`x' = pc01_pca_tot_`x' if inlist(year, 1998, 2005)
+   replace pop`x' = pc11_pca_tot_`x'; if year == 2013
+   replace pop`x' = pc91_pca_tot_`x' if year == 1990
+}
+
+/*
+
+-- if the loop does not work --
 
 gen popm = pc01_pca_tot_m if inlist(year, 1998, 2005)
 replace popm = pc11_pca_tot_m if year == 2013
@@ -143,6 +150,8 @@ replace popm = pc91_pca_tot_m if year == 1990
 gen popf = pc01_pca_tot_f if inlist(year, 1998, 2005)
 replace popf = pc11_pca_tot_f if year == 2013
 replace popf = pc91_pca_tot_f if year == 1990
+
+*/
 
 /* gen region long variable */
 gen region = pc01_sector if inlist(year, 1998, 2005)
