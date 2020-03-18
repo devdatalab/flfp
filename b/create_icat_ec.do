@@ -117,45 +117,50 @@ collapse (sum) count* emp*, by (year icat shrid)
 /* save SHRID level dataset */
 save $flfp/ec_flfp_icat.dta, replace
 
+
 /************************************/
-/* D) Collapse at Urban/Rural Level */
+/* C) Collapse at Urban/Rural Level */
 /************************************/
 
-/* merge 2013 EC with 2011 PC */
-use $flfp/shrug_pc11_pca.dta, clear
-gen year = 2013
-merge m:1 shrid year using $flfp/ec_flfp_icat.dta
-drop _merge
+/* use SHRID level ICAT dataset */
+use $flfp/ec_flfp_icat.dta, clear
 
-/* save as temporary file */
-save $tmp/collapsed_ec_flfp_all_years.dta, replace
+/* merge all PCs */
+foreach x in 91 01 11 {
+    merge m:1 shrid using $flfp/shrug_pc`x'_pca.dta
+	drop _merge
+}
 
-/* merge 2005 EC with 2001 PC */
-use $flfp/shrug_pc01_pca.dta, clear
-gen year = 2005
-merge m:1 shrid year using $tmp/temporary_ec_flfp_icat.dta
-drop _merge
+/* gen pop (t, m and f) long variable */
+gen popt = pc01_pca_tot_p if inlist(year, 1998, 2005)
+replace popt = pc11_pca_tot_p if year == 2013
+replace popt = pc91_pca_tot_p if year == 1990
 
-/* save as temporary file */
-save $tmp/temporary_ec_flfp_icat.dta, replace
+gen popm = pc01_pca_tot_m if inlist(year, 1998, 2005)
+replace popm = pc11_pca_tot_m if year == 2013
+replace popm = pc91_pca_tot_m if year == 1990
 
-/* merge 1990 EC with 1991 PC */
-use $flfp/shrug_pc91_pca.dta, clear
-gen year = 1990
-merge m:1 shrid year using $tmp/temporary_ec_flfp_icat.dta
-drop _merge
+gen popf = pc01_pca_tot_f if inlist(year, 1998, 2005)
+replace popf = pc11_pca_tot_f if year == 2013
+replace popf = pc91_pca_tot_f if year == 1990
 
-/* drop 1998, since we have no PC to match with it */
-drop if year == 1998
+/* gen region long variable */
+gen region = pc01_sector if inlist(year, 1998, 2005)
+replace region = pc11_sector if year == 2013
+replace region = pc91_sector if year == 1990
 
-/* drop if urban/rural classification is missing or classified as both urban and rural */
-drop if pc11_sector == . | 3
+/* keep emp* count* */
+keep shrid icat emp* count* region pop year
 
-/* collapse by year, ICAT, and urban/rural classification */
-collapse (sum) count* emp*, by (year icat pc11_sector)
+/* drop missing values */
+drop if region=.
+
+/* collapse dataset */
+collapse (sum) emp* count*, by (year icat region)
 
 /* save urban/rural level dataset */
 save $flfp/ec_flfp_icat_ur.dta, replace
+
 
 /*********************************/
 /* D) Collapse at National Level */
