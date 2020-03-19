@@ -117,7 +117,6 @@ collapse (sum) count* emp*, by (year icat shrid)
 /* save SHRID level dataset */
 save $flfp/ec_flfp_icat.dta, replace
 
-
 /************************************/
 /* C) Collapse at Urban/Rural Level */
 /************************************/
@@ -131,45 +130,35 @@ foreach x in 91 01 11 {
 	drop _merge
 }
 
-/* gen pop (total, male and female) long variable */
-
+/* generate pop (total, male and female) long variable */
 foreach x in m f p {
    gen pop`x' = pc01_pca_tot_`x' if inlist(year, 1998, 2005)
-   replace pop`x' = pc11_pca_tot_`x'; if year == 2013
+   replace pop`x' = pc11_pca_tot_`x' if year == 2013
    replace pop`x' = pc91_pca_tot_`x' if year == 1990
 }
 
-/*
-
--- if the loop does not work --
-
-gen popm = pc01_pca_tot_m if inlist(year, 1998, 2005)
-replace popm = pc11_pca_tot_m if year == 2013
-replace popm = pc91_pca_tot_m if year == 1990
-
-gen popf = pc01_pca_tot_f if inlist(year, 1998, 2005)
-replace popf = pc11_pca_tot_f if year == 2013
-replace popf = pc91_pca_tot_f if year == 1990
-
-*/
-
-/* gen region long variable */
+/* generate region long variable */
 gen region = pc01_sector if inlist(year, 1998, 2005)
 replace region = pc11_sector if year == 2013
 replace region = pc91_sector if year == 1990
 
+/* define the labels for numeric region variable */
+label define regionlabel 1 "Urban" 2 "Rural" 3 "Urban & Rural"
+
+/* apply region labels */
+label values region regionlabel
+
 /* keep emp* count* */
-keep shrid icat emp* count* region pop year
+keep shrid icat emp* count* region pop* year
 
 /* drop missing values */
-drop if region==.
+drop if region == .
 
 /* collapse dataset */
 collapse (sum) emp* count*, by (year icat region)
 
 /* save urban/rural level dataset */
 save $flfp/ec_flfp_icat_ur.dta, replace
-
 
 /*********************************/
 /* D) Collapse at National Level */
