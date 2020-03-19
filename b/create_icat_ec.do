@@ -219,10 +219,5 @@ drop if year == .
 /* Drop regionless observations */
 drop if region == "."
 
-/* Generate relevant employment statistics */
-gen emp_f_share = emp_f/(emp_f + emp_m)
-gen count_f_share = count_f/(count_f + count_m)
-gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
-
 /* Save to new state-level dataset */
 save $flfp/ec_flfp_icat_regional.dta, replace
