@@ -162,7 +162,7 @@ replace region = pc91_sector if year == 1990
 keep shrid icat emp* count* region pop year
 
 /* drop missing values */
-drop if region=.
+drop if region==.
 
 /* collapse dataset */
 collapse (sum) emp* count*, by (year icat region)
