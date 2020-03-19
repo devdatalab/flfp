@@ -14,7 +14,7 @@
 /* open country-wide dataset */
 use $flfp/ec_flfp_country_level.dta, clear
 
-/* create regional variable */
+/* create national region variable */
 gen region = "total"
 
 /* merge with region-level dataset */
@@ -108,7 +108,7 @@ drop if year==1990
 /* create levels so the loop will work across "region" (a string variable) */
 levelsof region, local(levels)
 
-/* loop over the levels of region */
+/* loop graph over the levels of region */
 foreach 1 of local levels {
 	twoway (scatter count_f_share year if region == "`1'", mcolor(blue)) ///
 	(scatter count_m_share year if region == "`1'", mcolor(red)), ///
