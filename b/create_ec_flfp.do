@@ -58,4 +58,4 @@ foreach y in 98 05 13 {
 
 recode year 90=1990 98=1998 5=2005 13=2013
 compress
-save $tmp/ec_flfp_all_years, replace
+save $flfp/ec_flfp_all_years, replace

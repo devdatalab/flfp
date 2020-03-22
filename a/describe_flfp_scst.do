@@ -4,16 +4,16 @@ use $flfp/flfp_ecpc.dta, clear
 
 ** Generate FLFP share variables for each EC year **
 foreach x in 1990 1998 2005 2013 {
-	gen emp_f_share_`x' = emp_f/(emp_f + emp_m) if year == `x'
-	}
-	
+	gen emp_f_share_`x' = emp_f / (emp_f + emp_m) if year == `x'
+}
+
 ** Generate SCST share variable for each EC year using closest PC data **
 foreach x in 91 01 11 {
-	gen scst_share_`x' = (pc`x'_pca_p_sc + pc`x'_pca_p_st)/pc`x'_pca_tot_p 
-	gen st_share_`x' = (pc`x'_pca_p_st)/pc`x'_pca_tot_p
-	gen sc_share_`x' = pc`x'_pca_p_sc/pc`x'_pca_tot_p
-	}
-	
+	gen scst_share_`x' = (pc`x'_pca_p_sc + pc`x'_pca_p_st) / pc`x'_pca_tot_p 
+	gen st_share_`x' = (pc`x'_pca_p_st) / pc`x'_pca_tot_p
+	gen sc_share_`x' = pc`x'_pca_p_sc / pc`x'_pca_tot_p
+}
+
 **Generate Binscatters for FLFP vs SCST share and combine graphs **
 binscatter emp_f_share_1990 scst_share_91, linetype(connect) title(1990) xtitle(SCST Share) ytitle(Female Employment Share)
 graph save scst_90, replace

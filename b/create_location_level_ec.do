@@ -13,111 +13,116 @@
 /****************************/
 
 /* Load EC dataset with all years */
-use $flfp/ec_flfp_all_years.dta, clear
+use $flfp/ec_flfp_all_years, clear
 
 /* Collapse to shrid-level dataset */
 collapse (sum) count* emp*, by (shrid year) 
 
-/* Generate relevant employment and ownership statistics */
-gen emp_f_share = emp_f/(emp_f + emp_m)
-gen count_f_share = count_f/(count_f + count_m)
-gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
+/* Generate share of shrid employment that is female */
+gen emp_f_share = emp_f / (emp_f + emp_m)
+
+/* generate count of female-owned firms (not counting firms with missing owner) */
+gen count_f_share = count_f / (count_f + count_m)
+
+/* generate employment in female-owned firms */
+gen emp_owner_f_share = emp_f_owner / (emp_m_owner + emp_f_owner)
 
 /* Save to new shrid-level dataset */
-save $flfp/ec_flfp_shrid_level.dta, replace
+save $flfp/ec_flfp_shrid_level, replace
 
 /*******************************/
 /* B) District Level Dataset   */
 /*******************************/
 
 /* Load EC dataset with all years */
-use $flfp/ec_flfp_all_years.dta, clear
+use $flfp/ec_flfp_all_years, clear
 
-/* Merge with 2011 PC District Key */
-merge m:1 shrid using $flfp/shrug_pc11_district_key.dta
+/* Get the 2011 PC district code for each shrid */
+merge m:1 shrid using $flfp/shrug_pc11_district_key
+keep if _merge == 3
+drop _merge
 
-/* Collapse by district name */
-collapse (sum) count* emp*, by(pc11_district_name year)
+/* Collapse to district level */
+drop if mi(pc11_district_id)
+collapse (sum) count* emp*, by(pc11_district_id year)
 
-/* Drop yearless district names */
-drop if year == .
-
-/* Generate relevant employment statistics */
-gen emp_f_share = emp_f/(emp_f + emp_m)
-gen count_f_share = count_f/(count_f + count_m)
-gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
+/* Generate female worker share, firm share, and employment share in female-owned firms */
+gen emp_f_share = emp_f / (emp_f + emp_m)
+gen count_f_share = count_f / (count_f + count_m)
+gen emp_owner_f_share = emp_f_owner / (emp_m_owner + emp_f_owner)
 
 /* Save to new district-level dataset */
-save $flfp/ec_flfp_district_level.dta, replace
+save $flfp/ec_flfp_district_level, replace
 
 /****************************/
 /* C) State Level Dataset   */
 /****************************/
 
 /* Load EC dataset with all years */
-use $flfp/ec_flfp_all_years.dta, clear
+use $flfp/ec_flfp_all_years, clear
 
 /* Merge with 2011 PC State Key */
-merge m:1 shrid using $flfp/shrug_pc11_state_key.dta
+merge m:1 shrid using $flfp/shrug_pc11_state_key
+keep if _merge == 3
+drop _merge
 
 /* Collapse by state name */
-collapse (sum) count* emp*, by(pc11_state_name year)
-
-/* Drop yearless state observations */
-drop if year == .
+drop if mi(pc11_state_id)
+collapse (sum) count* emp*, by(pc11_state_id year)
 
 /* Generate relevant employment statistics */
-gen emp_f_share = emp_f/(emp_f + emp_m)
-gen count_f_share = count_f/(count_f + count_m)
-gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
+gen emp_f_share = emp_f / (emp_f + emp_m)
+gen count_f_share = count_f / (count_f + count_m)
+gen emp_owner_f_share = emp_f_owner / (emp_m_owner + emp_f_owner)
 
 /* Save to new state-level dataset */
-save $flfp/ec_flfp_state_level.dta, replace
+save $flfp/ec_flfp_state_level, replace
 
 /*****************************/
 /* D) Region Level Dataset   */
 /*****************************/
 
 /* Load EC dataset with all years */
-use $flfp/ec_flfp_all_years.dta, clear
+use $flfp/ec_flfp_all_years, clear
 
-/* Merge with 2011 PC State Key */
-merge m:1 shrid using $flfp/shrug_pc11_state_key.dta
+/* get the state ids for each shrid */
+merge m:1 shrid using $flfp/shrug_pc11_state_key
+keep if _merge == 3
+drop _merge
+
+/* drop if missing state name */
+drop if mi(pc11_state_name) | mi(pc11_state_id)
 
 /* create regional variable */
-gen str13 region = "."
+gen str13 region = ""
 
-/* code North states */
-replace region = "north" if inlist(pc11_state_name, "jammu kashmir", "himachal pradesh", "punjab", ///
-"uttarakhand", "haryana")
+/* code hilly states */
+replace region = "hilly" if inlist(pc11_state_name, "jammu kashmir", "himachal pradesh", "punjab", ///
+    "uttarakhand", "haryana", "chandigarh")
  
 /* code South states */
- replace region = "south" if inlist(pc11_state_name, "karnataka", "andhra pradesh", "kerala", "tamil nadu")
+replace region = "south" if inlist(pc11_state_name, "maharashtra", "goa", "karnataka", "andhra pradesh", "kerala", "tamil nadu")
  
-/* code North-East states */
-replace region = "north-east" if inlist(pc11_state_name, "arunachal pradesh", "assam", "nagaland", "meghalya", ///
-"manipur", "tripura", "mizoram")
+/* code Northeast states */
+replace region = "northeast" if inlist(pc11_state_name, "sikkim", "arunachal pradesh", "assam", "nagaland", "meghalya", ///
+    "manipur", "tripura", "mizoram", "meghalaya")
 
-/* code Central states */
-replace region = "central" if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
-"gujarat", "jharkhand", "chattisgrah") | inlist(pc11_state_name, "odisha", "west bengal", "maharashtra")
- 
+/* code northern states */
+replace region = "north" if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
+    "gujarat", "jharkhand") | inlist(pc11_state_name, "nct of delhi", "odisha", "west bengal", "chhattisgarh")
+
+drop if mi(year) | mi(region)
+
 /* Collapse by region */
 collapse (sum) count* emp*, by(region year)
 
-/* Drop yearless observations */
-drop if year == .
-
-/* Drop regionless observations */
-drop if region == "."
-
-/* Generate relevant employment statistics */
-gen emp_f_share = emp_f/(emp_f + emp_m)
-gen count_f_share = count_f/(count_f + count_m)
-gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
+/* Generate the female employment/entrepreneurship stats */
+gen emp_f_share = emp_f / (emp_f + emp_m)
+gen count_f_share = count_f / (count_f + count_m)
+gen emp_owner_f_share = emp_f_owner / (emp_m_owner + emp_f_owner)
 
 /* Save to new state-level dataset */
-save $flfp/ec_flfp_region_level.dta, replace
+save $flfp/ec_flfp_region_level, replace
 
 /*******************************************************************/
 /* E) Country Averages Dataset                                     */
@@ -126,15 +131,15 @@ save $flfp/ec_flfp_region_level.dta, replace
 /*******************************************************************/
 
 /* Load EC dataset with all years */
-use $flfp/ec_flfp_all_years.dta, clear
+use $flfp/ec_flfp_all_years, clear
 
 /* Collapse by year */
 collapse (sum) count* emp*, by (year) 
 
 /* Generate relevant employment and ownership statistics */
-gen emp_f_share = emp_f/(emp_f + emp_m)
-gen count_f_share = count_f/(count_f + count_m)
-gen emp_owner_f_share = emp_f_owner/(emp_m_owner + emp_f_owner)
+gen emp_f_share = emp_f / (emp_f + emp_m)
+gen count_f_share = count_f / (count_f + count_m)
+gen emp_owner_f_share = emp_f_owner / (emp_m_owner + emp_f_owner)
 
 /* Save to country-wide dataset */
-save $flfp/ec_flfp_country_level.dta, replace
+save $flfp/ec_flfp_country_level, replace

@@ -21,9 +21,9 @@ gen region = "total"
 append using $flfp/ec_flfp_region_level.dta
 
 /* generate mlfp statistics */
-gen emp_m_share = emp_m/(emp_f + emp_m)
-gen count_m_share = count_m/(count_f + count_m)
-gen emp_owner_m_share = emp_m_owner/(emp_m_owner + emp_f_owner)
+gen emp_m_share = emp_m / (emp_f + emp_m)
+gen count_m_share = count_m / (count_f + count_m)
+gen emp_owner_m_share = emp_m_owner / (emp_m_owner + emp_f_owner)
 
 /* save new dataset with national averages */
 save $tmp/flfp_regional_analysis.dta, replace
@@ -40,19 +40,21 @@ levelsof region, local(levels)
 
 /* loop over the levels of region */
 foreach 1 of local levels {
-	twoway (scatter emp_f_share year if region == "`1'", mcolor(blue)) ///
-	(scatter emp_m_share year if region == "`1'", mcolor(red)), ///
-	graphregion(color(white)) ///
-	xtitle("Year") ytitle("emp_share") ///
-	ylabel(, angle(0) format(%9.2f) nogrid) ///
-	legend(label(1 female) label(2 male)) ///
-	title("`1'")
+  sort year
+	twoway ///
+      (line emp_f_share year if region == "`1'", mcolor(blue)) ///
+      (line emp_m_share year if region == "`1'", mcolor(red)), ///
+      graphregion(color(white)) ///
+      xtitle("Year") ytitle("emp_share") ///
+      ylabel(, angle(0) format(%9.2f) nogrid) ///
+      legend(label(1 female) label(2 male)) ///
+      title("`1'")
 	graph save "`1'_regional_lfp", replace
 }
 
 /* combine graphs */
-grc1leg total_regional_lfp.gph north_regional_lfp.gph south_regional_lfp.gph ///
-north-east_regional_lfp.gph central_regional_lfp.gph, ///
+grc1leg total_regional_lfp.gph hilly_regional_lfp.gph south_regional_lfp.gph ///
+northeast_regional_lfp.gph north_regional_lfp.gph, ///
 legendfrom(total_regional_lfp.gph) ///
 ycommon xcommon ///
 title(Male Employment Share vs. Female Employment Share by Region)
@@ -86,8 +88,8 @@ foreach 1 of local levels {
 }
 
 /* combine graphs */
-grc1leg total_regional_lfp.gph north_regional_lfp.gph south_regional_lfp.gph ///
-north-east_regional_lfp.gph central_regional_lfp.gph, ///
+grc1leg total_regional_lfp.gph hilly_regional_lfp.gph south_regional_lfp.gph ///
+northeast_regional_lfp.gph north_regional_lfp.gph, ///
 legendfrom(total_regional_lfp.gph) ///
 ycommon xcommon ///
 title("Male Employment Share vs. Female Employment" "Ownership Share by Region")
@@ -121,8 +123,8 @@ foreach 1 of local levels {
 }
 
 /* combine graphs */
-grc1leg total_regional_lfp.gph north_regional_lfp.gph south_regional_lfp.gph ///
-north-east_regional_lfp.gph central_regional_lfp.gph, ///
+grc1leg total_regional_lfp.gph hilly_regional_lfp.gph south_regional_lfp.gph ///
+northeast_regional_lfp.gph north_regional_lfp.gph, ///
 legendfrom(total_regional_lfp.gph) ///
 ycommon xcommon ///
 title("Male Employment Share vs. Female Employment" "Count Share by Region")
