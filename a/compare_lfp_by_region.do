@@ -48,19 +48,18 @@ foreach 1 of local levels {
       xtitle("Year") ytitle("emp_share") ///
       ylabel(, angle(0) format(%9.2f) nogrid) ///
       legend(label(1 female) label(2 male)) ///
-      title("`1'")
-	graph save "`1'_regional_lfp", replace
+      title("`1'") name(`1'_regional_lfp, replace)
 }
 
 /* combine graphs */
-grc1leg total_regional_lfp.gph hilly_regional_lfp.gph south_regional_lfp.gph ///
-northeast_regional_lfp.gph north_regional_lfp.gph, ///
-legendfrom(total_regional_lfp.gph) ///
+grc1leg total_regional_lfp hilly_regional_lfp south_regional_lfp ///
+northeast_regional_lfp north_regional_lfp, ///
+legendfrom(total_regional_lfp) ///
 ycommon xcommon ///
 title(Male Employment Share vs. Female Employment Share by Region)
 
 /* export graph */
-graph export $tmp/emp_share_comparison_regional_graph.png, replace
+graphout emp_share_comparison_regional_graph
 
 /********************************************************/
 /* C) Female vs. male employment ownership share graph  */
@@ -95,7 +94,7 @@ ycommon xcommon ///
 title("Male Employment Share vs. Female Employment" "Ownership Share by Region")
 
 /* export graph */
-graph export $tmp/emp_ownership_share_comparison_regional_graph.png, replace
+graphout emp_ownership_share_comparison_regional_graph
 
 /****************************************************/
 /* D) Female vs. male employment count share graph  */
@@ -130,4 +129,4 @@ ycommon xcommon ///
 title("Male Employment Share vs. Female Employment" "Count Share by Region")
 
 /* export graph */
-graph export $tmp/count_share_comparison_regional_graph.png, replace
+graphout count_share_comparison_regional_graph
