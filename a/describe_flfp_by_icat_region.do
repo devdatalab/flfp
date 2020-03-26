@@ -57,15 +57,12 @@ foreach y in emp_f_share emp_owner_f_share count_f_share {
           xtitle("Year") ytitle("`y'") ///
           ylabel(, angle(0) format(%9.2f) nogrid) ///
           legend(off) ///
-          title("`1'")
-      
-      /* saves graph with regional name to allow for combining */
-      graph save "`1'_regional_flfp", replace
+          title("`1'") name(`1'_regional_flfp, replace)
     }
 
     /* combines regional graphs, with a common axis, titled with ICAT and FLFP variable */
-    graph combine total_regional_flfp.gph north_regional_flfp.gph south_regional_flfp.gph ///
-        northeast_regional_flfp.gph north_regional_flfp.gph, ///
+    graph combine total_regional_flfp north_regional_flfp south_regional_flfp ///
+        northeast_regional_flfp north_regional_flfp, ///
         ycommon xcommon ///
         title("`v'" (`y'))
     

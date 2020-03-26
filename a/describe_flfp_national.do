@@ -82,11 +82,11 @@ local tot_emp_f_owner_share "Employment in Female Owned Firms Share"
 /* generate graphs for female employment share, female entrepreneur share and employment in female owned firms, overall */
 
 graph twoway line tot_emp_f_share year, title(Female Employment Share) ytitle(Female Employment Share) xtitle(Year)
-gr export $graphs/nationaltotempfshare.png, replace as (png)
+graphout nationaltotempfshare
 
 foreach var in tot_emp_f_owner_share tot_count_f_share {
-     graph twoway line `var' year if year~=1990, title(``var'') xtitle("year") ytitle(``var'')
-	 gr export $graphs/national`var'.png, replace as (png)
+  graph twoway line `var' year if year~=1990, title(``var'') xtitle("year") ytitle(``var'')
+	graphout national`var'
 }	 
 
 /* using combine option for better formatting for industry-wise graphs */
@@ -100,27 +100,27 @@ forval i= 1(1)17 {
 }
 
 grc1leg2 `graphs', title (Female Employment Share by Industry) legendfrom(g1) xtob1title ytol1title 
-graph export $graphs/nationalempfsharecombine.png, replace as (png)
+graphout nationalempfsharecombine
 
 /* female entrepreneurship share */
 
 forval i= 1(1)17 {
-      local v : label (icat) `i'
-	  graph twoway line count_f_share year if icat==`i' & year~=1990, title("`v'") xtitle("Year") ytitle("Female Entrepreneurship Share") name(h`i', replace) nodraw
-      local graphs2 "`graphs2' h`i'"
+  local v : label (icat) `i'
+  graph twoway line count_f_share year if icat==`i' & year~=1990, title("`v'") xtitle("Year") ytitle("Female Entrepreneurship Share") name(h`i', replace) nodraw
+  local graphs2 "`graphs2' h`i'"
 }
 
 grc1leg2 `graphs2', title (Female Entrepreneurship Share by Industry) legendfrom(h1) xtob1title ytol1title 
-graph export $graphs/nationalcountfsharecombine.png, replace as (png)
+graphout nationalcountfsharecombine
 
 /*  share of employment in female owned firms share */
 
 forval i= 1(1)17 {
-      local v : label (icat) `i'
-	  graph twoway line emp_f_owner_share year if icat==`i' & year~=1990, title("`v'") xtitle("Year") ytitle("Share of Employees in Female Owned Firms") name(j`i', replace) nodraw
-      local graphs3 "`graphs3' j`i'"
+  local v : label (icat) `i'
+  graph twoway line emp_f_owner_share year if icat==`i' & year~=1990, title("`v'") xtitle("Year") ytitle("Share of Employees in Female Owned Firms") name(j`i', replace) nodraw
+  local graphs3 "`graphs3' j`i'"
 }
 
 grc1leg2 `graphs3', title (Share of Employees in Female Owned Firms) legendfrom(j1) xtob1title ytol1title 
-graph export $graphs/nationalempfownersharecombine.png, replace as (png)
+graphout nationalempfownersharecombine
 

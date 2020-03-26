@@ -44,7 +44,8 @@ twoway (scatter emp_f_share year if region == "total", mcolor(black)) ///
 	title(Female Employment Share by Region)
 	
 /* export graph to temporary files */
-graph export $tmp/emp_f_share_regional_graph.png, replace
+graphout emp_f_share_regional_graph
+
 
 /**********************************************/
 /* C) Female employment ownership share graph */
@@ -70,7 +71,7 @@ twoway (scatter emp_owner_f_share year if region == "total", mcolor(black)) ///
 	title(Female Employment Ownership Share by Region)
 	
 /* export graph to temporary files */
-graph export $tmp/emp_f_ownership_share_regional_graph.png, replace
+graphout emp_f_ownership_share_regional_graph
 
 /******************************************/
 /* D) Female employment count share graph */
@@ -96,4 +97,4 @@ twoway (scatter count_f_share year if region == "total", mcolor(black)) ///
 	title(Female Employment Count Share by Region)
 	
 /* export graph to temporary files */
-graph export $tmp/count_f_share_regional_graph.png, replace
+graphout count_f_share_regional_graph
