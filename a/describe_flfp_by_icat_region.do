@@ -58,8 +58,9 @@ foreach y in emp_f_share emp_owner_f_share count_f_share {
           legend(label(1 India (Total)) label(2 Hilly) label(3 South) ///
 		  label(4 Northeast) label(5 North)) ///
 		  title("`v'")
+		  
+	/* saves graphs */
+	graphout `i'_`y'_regional_graph
 }
 
-    // graph save $tmp/`i'_`y'_regional_graph.png, replace
-    graphout `i'_`y'_regional_graph
 }
