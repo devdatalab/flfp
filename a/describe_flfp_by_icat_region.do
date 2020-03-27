@@ -33,9 +33,6 @@ save $tmp/flfp_regional_analysis.dta, replace
 /* open dataset */
 use $tmp/flfp_regional_analysis.dta, clear
 
-/* creates rmax() for regional loop */
-levelsof region, local(regionlevels)
-
 /* loops over FLFP variables */
 foreach y in emp_f_share emp_owner_f_share count_f_share {
 
@@ -48,25 +45,21 @@ foreach y in emp_f_share emp_owner_f_share count_f_share {
     /* sets local for ICAT labeling in combined graphs */
     local v : label (icat) `i'
 
-    /* loops over regions, using levels from earlier */
-    foreach 1 of local regionlevels {
-
-      /* scatters FLFP variable against year in a certain region & ICAT */
-      twoway scatter `y' year if region == "`1'" & icat == `i', ///
+      /* graphs FLFP variable against year by region in a certain icat */
+      twoway ///
+	  (line `y' year if region == "total" & icat == `i', lcolor(black)) ///
+	  (line `y' year if region == "hilly" & icat == `i', lcolor(red)) ///
+	  (line `y' year if region == "south" & icat == `i', lcolor(blue)) ///
+	  (line `y' year if region == "northeast" & icat == `i', lcolor(green)) ///
+	  (line `y' year if region == "north" & icat == `i', lcolor(orange)), ///
           graphregion(color(white)) ///
           xtitle("Year") ytitle("`y'") ///
           ylabel(, angle(0) format(%9.2f) nogrid) ///
-          legend(off) ///
-          title("`1'") name(`1'_regional_flfp, replace)
-    }
+          legend(label(1 India (Total)) label(2 Hilly) label(3 South) ///
+		  label(4 Northeast) label(5 North)) ///
+		  title("`v'")
+}
 
-    /* combines regional graphs, with a common axis, titled with ICAT and FLFP variable */
-    graph combine total_regional_flfp north_regional_flfp south_regional_flfp ///
-        northeast_regional_flfp north_regional_flfp, ///
-        ycommon xcommon ///
-        title("`v'" (`y'))
-    
     // graph save $tmp/`i'_`y'_regional_graph.png, replace
     graphout `i'_`y'_regional_graph
-  }
 }
