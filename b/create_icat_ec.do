@@ -195,29 +195,11 @@ keep if _merge == 3
 drop _merge
 
 /* Merge with 2011 PC State Key */
-merge m:1 shrid using $flfp/shrug_pc11_state_key
+merge m:1 shrid using $flfp/shrug_pc11_region_key
 keep if _merge == 3
 drop _merge
-
-/* create regional variable */
-gen region = ""
-
-/* code hilly states */
-replace region = "hilly" if inlist(pc11_state_name, "jammu kashmir", "himachal pradesh", "punjab", ///
-    "uttarakhand", "haryana", "chandigarh")
  
-/* code South states */
-replace region = "south" if inlist(pc11_state_name, "maharashtra", "goa", "karnataka", "andhra pradesh", "kerala", "tamil nadu")
- 
-/* code Northeast states */
-replace region = "northeast" if inlist(pc11_state_name, "sikkim", "arunachal pradesh", "assam", "nagaland", "meghalya", ///
-    "manipur", "tripura", "mizoram", "meghalaya")
-
-/* code northern states */
-replace region = "north" if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
-    "gujarat", "jharkhand") | inlist(pc11_state_name, "nct of delhi", "odisha", "west bengal", "chhattisgarh")
- 
-/* collapse by region, year, and ICAT */
+/* collapse by region, year, and icat */
 drop if mi(region) | mi(year) | mi(icat)
 collapse (sum) count* emp*, by(region year icat)
 

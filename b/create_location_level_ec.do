@@ -5,8 +5,9 @@
 /* A) SHRID Level Dataset */
 /* B) District Level Dataset */
 /* C) State Level Dataset */
-/* D) Region Level Dataset */
-/* E) Country Averages Dataset */
+/* D) Classify and label regions */
+/* E) Region Level Dataset */
+/* F) Country Averages Dataset */
 
 /****************************/
 /* A) SHRID Level Dataset   */
@@ -78,17 +79,12 @@ gen emp_owner_f_share = emp_f_owner / (emp_m_owner + emp_f_owner)
 /* Save to new state-level dataset */
 save $flfp/ec_flfp_state_level, replace
 
-/*****************************/
-/* D) Region Level Dataset   */
-/*****************************/
+/*********************************/
+/* D) Classify and label regions */
+/*********************************/
 
-/* Load EC dataset with all years */
-use $flfp/ec_flfp_all_years, clear
-
-/* get the state ids for each shrid */
-merge m:1 shrid using $flfp/shrug_pc11_state_key
-keep if _merge == 3
-drop _merge
+/* load state key */
+use $flfp/shrug_pc11_state_key, clear
 
 /* drop if missing state name */
 drop if mi(pc11_state_name) | mi(pc11_state_id)
@@ -111,6 +107,22 @@ replace region = "northeast" if inlist(pc11_state_name, "sikkim", "arunachal pra
 replace region = "north" if inlist(pc11_state_name, "rajasthan", "uttar pradesh", "bihar", "madhya pradesh", ///
     "gujarat", "jharkhand") | inlist(pc11_state_name, "nct of delhi", "odisha", "west bengal", "chhattisgarh")
 
+/* save new regional key */
+save $flfp/shrug_pc11_region_key, replace
+
+/*****************************/
+/* E) Region Level Dataset   */
+/*****************************/
+
+/* Load EC dataset with all years */
+use $flfp/ec_flfp_all_years, clear
+
+/* get the state ids for each shrid */
+merge m:1 shrid using $flfp/shrug_pc11_region_key
+keep if _merge == 3
+drop _merge
+
+/* drop if missing year or region */
 drop if mi(year) | mi(region)
 
 /* Collapse by region */
@@ -125,7 +137,7 @@ gen emp_owner_f_share = emp_f_owner / (emp_m_owner + emp_f_owner)
 save $flfp/ec_flfp_region_level, replace
 
 /*******************************************************************/
-/* E) Country Averages Dataset                                     */
+/* F) Country Averages Dataset                                     */
 /* This is to be appended to the other data sets, to compare with  */
 /* national trends, avoiding weighting issues                      */
 /*******************************************************************/
