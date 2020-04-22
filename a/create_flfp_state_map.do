@@ -1,4 +1,4 @@
-/*********************************************/
+*********************************************/
 /*GENERATE MAPS FOR FLFP BY STATE			 */
 /*********************************************/
 
@@ -71,7 +71,7 @@ rsource, terminator(END_OF_R) rpath("/usr/local/bin/R") roptions(`"--vanilla"')
 		image_read() %>%
 		image_join() %>%
 		image_animate(fps = 1) %>%
-		image_write("ec_flfp_state_map.gif")
+		image_write("ec_flfp_state_cloropleth.gif")
   
 END_OF_R
 
