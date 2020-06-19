@@ -45,7 +45,7 @@ foreach i of local file_list {
   
 }
 
-/* have to clean chattisgarh separately, since the block-level variables have
+/* have to clean chhattisgarh separately, since the block-level variables have
 different names than other state files (general commands and logic are the same as the loop) */
 
 use ~/iec/pc01/location_codes/CDmain/Village/DIR-22, clear
@@ -95,3 +95,6 @@ foreach i of local file_list {
 
 /* drop the empty observation produced when creating an empty dataset */
 drop in 1
+
+/* save dataset */
+save $ebb/pc01_block_key, replace
