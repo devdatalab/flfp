@@ -109,6 +109,7 @@ drop dup
 
 /* generate unique identifiers (necessary for later masala merges) */
 gen id = _n
+tostring id, replace
 
 /* convert string IDs to numeric */
 destring pc01_state_id pc01_district_id pc01_block_id, replace

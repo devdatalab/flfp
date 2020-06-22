@@ -1,3 +1,6 @@
+/* install packages necessary for masala merge */
+ssc install reclink
+
 /******************************/
 /* Standardize EBB formatting */
 /******************************/
@@ -15,6 +18,7 @@ ren cd_block_name pc01_block_name
 
 /* generate unique identifiers for observations (necessary for masala merge) */
 gen id = _n
+tostring id, replace
 
 /***********************/
 /* Merge with PC01 key */
