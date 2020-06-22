@@ -36,9 +36,9 @@ foreach i of local file_list {
   drop if mi(pc01_block_name)
 
   /* keep new variables, dropping the rest */
-  keep pc01_state_id pc01_state_name pc01_district_id ///
-      pc01_block_id pc01_block_name
-
+  collapse (firstnm) pc01_state_id pc01_state_name pc01_district_id, ///
+      by(pc01_block_id pc01_block_name)
+  
   /* save clean dataset as a temporary file */
   save $tmp/DIR-`i'-clean, replace
   
@@ -64,8 +64,8 @@ ren c9 pc01_block_name
 replace pc01_block_name = lower(pc01_block_name)
 drop if mi(pc01_block_name)
 
-keep pc01_state_id pc01_state_name pc01_district_id ///
-    pc01_block_id pc01_block_name
+collapse (firstnm) pc01_state_id pc01_state_name pc01_district_id, ///
+    by(pc01_block_id pc01_block_name)
 
 save $tmp/DIR-22-clean, replace
 
@@ -96,6 +96,9 @@ foreach i of local file_list {
 /* drop the empty observation produced when creating an empty dataset */
 drop in 1
 
+/* clean block names (was creating issues for masala merge) */
+name_clean pc01_block_name, replace
+
 /* generate duplicate observation variable */
 sort pc01_state_id pc01_district_id pc01_block_name
 quietly by pc01_state_id pc01_district_id pc01_block_name: gen dup = cond(_N==1,0,_n)
@@ -105,7 +108,10 @@ drop if dup > 1
 drop dup
 
 /* generate unique identifiers (necessary for later masala merges) */
-gen pc01_id =_n
+gen id = _n
+
+/* convert string IDs to numeric */
+destring pc01_state_id pc01_district_id pc01_block_id, replace
 
 /* save dataset */
 save $ebb/pc01_village_block_key, replace
