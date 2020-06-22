@@ -19,9 +19,6 @@ foreach i of local file_list {
   /* add that state name to all the other observations */
   replace pc01_state_name = pc01_state_name[_n-1] if missing(pc01_state_name)
 
-  /* make all the state names lowercase */
-  replace pc01_state_name = lower(pc01_state_name)
-
   /* drop the top variable which lists what c1-c7 mean */
   drop if mi(pc01_state_name)
 
@@ -31,14 +28,16 @@ foreach i of local file_list {
   ren c6 pc01_block_id
   ren c7 pc01_block_name
 
-  /* make block names lowercase */
+  /* make names lowercase */
+  replace pc01_state_name = lower(pc01_state_name)
   replace pc01_block_name = lower(pc01_block_name)
 
   /* drop higher level observations that indicate no block */
   drop if mi(pc01_block_name)
 
   /* keep new variables, dropping the rest */
-  keep pc01_state_id pc01_state_name pc01_district_id pc01_block_id pc01_block_name
+  keep pc01_state_id pc01_state_name pc01_district_id ///
+      pc01_block_id pc01_block_name
 
   /* save clean dataset as a temporary file */
   save $tmp/DIR-`i'-clean, replace
@@ -65,7 +64,8 @@ ren c9 pc01_block_name
 replace pc01_block_name = lower(pc01_block_name)
 drop if mi(pc01_block_name)
 
-keep pc01_state_id pc01_state_name pc01_district_id pc01_block_id pc01_block_name
+keep pc01_state_id pc01_state_name pc01_district_id ///
+    pc01_block_id pc01_block_name
 
 save $tmp/DIR-22-clean, replace
 
@@ -96,5 +96,16 @@ foreach i of local file_list {
 /* drop the empty observation produced when creating an empty dataset */
 drop in 1
 
+/* generate duplicate observation variable */
+sort pc01_state_id pc01_district_id pc01_block_name
+quietly by pc01_state_id pc01_district_id pc01_block_name: gen dup = cond(_N==1,0,_n)
+
+/* drop all duplicate occurences */
+drop if dup > 1
+drop dup
+
+/* generate unique identifiers (necessary for later masala merges) */
+gen pc01_id =_n
+
 /* save dataset */
-save $ebb/pc01_block_key, replace
+save $ebb/pc01_village_block_key, replace
