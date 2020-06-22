@@ -10,7 +10,7 @@ local file_list 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 ///
 foreach i of local file_list {
 
   /* use each PC01 raw data state file */
-  use ~/iec/pc01/location_codes/CDmain/Village/DIR-`i', clear
+  use $pc01/location_codes/CDmain/Village/DIR-`i', clear
 
   /* the c5 variable contains district and state names, so this creates
   a new state name variable with the observation containing that name */
@@ -47,7 +47,7 @@ foreach i of local file_list {
 /* have to clean chhattisgarh separately, since the block-level variables have
 different names than other state files (general commands and logic are the same as the loop) */
 
-use ~/iec/pc01/location_codes/CDmain/Village/DIR-22, clear
+use $pc01/location_codes/CDmain/Village/DIR-22, clear
 
 gen pc01_state_name = c5 if c2 == "00"
 replace pc01_state_name = pc01_state_name[_n-1] if missing(pc01_state_name)
