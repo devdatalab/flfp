@@ -3,7 +3,7 @@
 /**************************/
 
 /* create a local for the state file names */
-local file_list 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 ///
+local file_list 01 02 03 04 05 06 07 08 09 09b 10 11 12 13 14 15 16 ///
     17 18 19 20 21 23 24 25 26 27 28 29 30 31 32 33 34 35
 
 /* loop through each of the state files */
@@ -76,7 +76,7 @@ save $tmp/DIR-22-clean, replace
 clear
 
 /* create another local for the file names */
-local file_list 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 ///
+local file_list 01 02 03 04 05 06 07 08 09 09b 10 11 12 13 14 15 16 ///
     17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35
 
 /* create an empty dataset (an append loop has to append to something
