@@ -14,6 +14,10 @@ destring pc01_state_id pc01_district_id pc01_block_id, replace
 /* standardize jammue kashmir name */
 replace pc01_state_name = "jammu & kashmir" if pc01_state_name == "jammu kashmir"
 
+/* manually change ebb districts to pc01 districts */
+replace pc01_district_id = 5 if pc01_block_name == "kulgam"
+replace pc01_district_id = 5 if pc01_block_name == "shupiyan"
+
 /* generate unique identifiers (necessary for masala merge) */
 gen id = _n
 tostring id, replace
