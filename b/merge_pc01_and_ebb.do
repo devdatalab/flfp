@@ -37,5 +37,8 @@ tostring id, replace
 masala_merge pc01_state_id pc01_district_id using $ebb/pc01_village_block_key, ///
     s1(pc01_block_name) idmaster(id) idusing(id)
 
+/* drop merge variable */
+drop _merge
+
 /* save merged dataset */
 save $ebb/ebbs_list_clean, replace
