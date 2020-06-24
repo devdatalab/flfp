@@ -10,12 +10,14 @@ use $ebb/ebbs_list, clear
 
 /* make state, district, block names lowercase */
 replace state_name = lower(state_name)
+replace district_name = lower(district_name)
+replace cd_block_name = lower(cd_block_name)
+
+/* standardize variable names */
 ren state_code pc01_state_id
 ren state_name pc01_state_name
-replace district_name = lower(district_name)
 ren district_code pc01_district_id
 ren district_name pc01_district_name
-replace cd_block_name = lower(cd_block_name)
 ren cd_block_name pc01_block_name
 
 /* drop unnamed forest villages (no match in PC01) */
@@ -24,6 +26,13 @@ drop if pc01_block_name == "forest villages"
 /* manually change ebb districts to pc01 districts */
 replace pc01_district_id = 10 if pc01_block_name == "bhattu kalan (p)"
 replace pc01_district_id = 10 if pc01_block_name == "uklana (p)"
+replace pc01_district_id = 10 if pc01_block_name == "sikandrabad"
+replace pc01_district_id = 46 if pc01_block_name == "puredalai"
+replace pc01_district_id = 4 if pc01_block_name == "amroha"
+replace pc01_district_id = 5 if pc01_block_name == "kulgam"
+replace pc01_district_id = 5 if pc01_block_name == "shupiyan"
+replace pc01_district_id = 12 if pc01_block_name == "shahpura" ///
+    & pc01_state_name == "rajasthan"
 
 /* generate unique identifiers for observations (necessary for masala merge) */
 gen id = _n
@@ -39,6 +48,25 @@ masala_merge pc01_state_id pc01_district_id using $ebb/pc01_village_block_key, /
 
 /* drop merge variable */
 drop _merge
+
+/* merge using and master block names into one variable */
+gen pc01_block_name = pc01_block_name_master
+replace pc01_block_name = pc01_block_name_using if mi(pc01_block_name_master)
+
+/* generate duplicate observation variable */
+sort pc01_state_id pc01_district_id pc01_block_name
+quietly by pc01_state_id pc01_district_id pc01_block_name: gen dup = cond(_N==1,0,_n)
+
+/* drop all duplicate occurences */
+drop if dup > 1
+drop dup
+
+/* generate unique identifiers for observations */
+gen id = _n
+tostring id, replace
+
+/* drop variables which will be generates in future masala merges */
+drop id_using id_master pc01_block_name_master pc01_block_name_using
 
 /* save merged dataset */
 save $ebb/ebbs_list_clean, replace
