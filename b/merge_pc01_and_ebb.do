@@ -24,7 +24,6 @@ ren cd_block_name pc01_block_name
 drop if pc01_block_name == "forest villages"
 
 /* manually change ebb districts to pc01 districts */
-replace pc01_district_id = 10 if pc01_block_name == "bhattu kalan (p)"
 replace pc01_district_id = 10 if pc01_block_name == "uklana (p)"
 replace pc01_district_id = 10 if pc01_block_name == "sikandrabad"
 replace pc01_district_id = 46 if pc01_block_name == "puredalai"
@@ -53,13 +52,9 @@ drop _merge
 gen pc01_block_name = pc01_block_name_master
 replace pc01_block_name = pc01_block_name_using if mi(pc01_block_name_master)
 
-/* generate duplicate observation variable */
-sort pc01_state_id pc01_district_id pc01_block_name
-quietly by pc01_state_id pc01_district_id pc01_block_name: gen dup = cond(_N==1,0,_n)
-
-/* drop all duplicate occurences */
-drop if dup > 1
-drop dup
+/* manually drop duplicate uttar pradesh observations that are not
+captured in the ddrop because they're in different districts */
+drop if match_source == 6
 
 /* generate unique identifiers for observations */
 gen id = _n
