@@ -117,3 +117,5 @@ tostring id, replace
 
 /* drop variables which will be generates in future masala merges */
 drop id_using id_master pc01_block_name_master pc01_block_name_using
+
+save $tmp/dise_pc01, replace
