@@ -23,6 +23,15 @@ replace dise_state = "dadra & nagar haveli" if dise_state == "dadra-and-nagar-ha
 replace dise_state = "daman & diu" if dise_state == "daman-and-diu"
 replace dise_state = "jammu & kashmir" if dise_state == "jammu-and-kashmir"
 
+/* edit district names */
+
+replace district = "aurangabad" if district == "aurangabad maharashtra"
+
+foreach var in east west south north {
+  replace district = "`var'" if district == "`var' delhi"
+  replace district = "`var'" if district == "`var' sikkim"
+}
+
 /* drop collective  NE states entry*/
 drop if dise_state == "north-eastern-states"
 
@@ -47,8 +56,20 @@ save $tmp/dise_2.dta, replace
 
 use $ebb/ebbs_list_clean, clear
 
+/* rename district names to match DISE */
+
+replace pc01_district_name = "dima hasao" if pc01_district_name=="north cachar hills"
+replace pc01_district_name = "chikkamangalore" if pc01_district_name == "chikmagalur"
+replace pc01_district_name = "khandwa" if pc01_district_name == "east nimar"
+replace pc01_district_name = "khargone" if pc01_district_name == "west nimar"
+replace pc01_district_name = "balasore" if pc01_district_name == "baleshwar"
+replace pc01_district_name = "keonjhar" if pc01_district_name == "kendujhar"
+
+/* save temp dataset */
+save  $tmp/ebbs_district, replace
+
 /* keep district and state ideentifies */
-keep pc01_state_name pc01_state_id pc01_district_name pc01_district_id
+keep id pc01_state_name pc01_state_id pc01_district_name pc01_district_id
 
 /* gen  duplicates idenitiifies variable */
 sort pc01_state_id pc01_district_id
@@ -59,7 +80,7 @@ drop if dup > 1
 drop dup
 
 /* save pc01 dataset */
-save $mp/ebbs_district2, replace
+save $tmp/ebbs_district2, replace
 
 /* use temp dise dataset*/
 use $tmp/dise_2, clear
@@ -102,7 +123,7 @@ drop match_source masala_dist
 drop if mi(pc01_block_name)
 
 /* masala merge with block names from pc01 */
-masala_merge pc01_state_name pc01_state_id pc01_district_id pc01_district_name using $ebb/ebbs_list_clean, s1(pc01_block_name) idmaster(id) idusing(id)
+masala_merge pc01_state_name pc01_state_id pc01_district_id pc01_district_name using $tmp/ebbs_district, s1(pc01_block_name) idmaster(id) idusing(id)
 
 /* drop merge variable */
 drop _merge
