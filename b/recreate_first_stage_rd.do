@@ -43,17 +43,29 @@ foreach var of varlist _all {
 }
 
 /* collapse to block level */
-collapse (sum) pc01_pca_f_lit_rate pc01_pca_tot_f, by(pc01_state_name pc01_state_id ///
-    pc01_district_name pc01_district_id pc01_block_name pc01_block_id)
+collapse (sum) pc01_pca_f_lit pc01_pca_tot_f pc01_pca_m_lit pc01_pca_tot_m, ///
+    by(pc01_state_name pc01_state_id pc01_district_name pc01_district_id ///
+    pc01_block_name pc01_block_id)
 
-/* generate female literacy rate in each block */
-gen pc01_female_literacy_rate = (pc01_pca_f_lit_rate / pc01_pca_tot_f)
+/* calculate female literacy rate */
+gen pc01_pca_f_lit_rate = (pc01_pca_f_lit / pc01_pca_tot_f)
+label variable pc01_pca_f_lit_rate "Block female literacy rate (PC01)"
+
+/* calculate literacy rate gender gap */
+gen pc01_pca_m_lit_rate = (pc01_pca_m_lit / pc01_pca_tot_m)
+label variable pc01_pca_m_lit_rate "Block male literacy rate (PC01)"
+gen pc01_pca_lit_gender_gap = (pc01_pca_m_lit_rate - pc01_pca_f_lit_rate)
+label variable pc01_pca_lit_gender_gap "Block gap in literacy rates by gender (PC01)"
+
+/* drop total variables used to calculate rates */
+drop pc01_pca_f_lit pc01_pca_tot_f pc01_pca_m_lit pc01_pca_tot_m
 
 /* destring ID values (need standard data type for masala merge) */
 destring pc01_state_id pc01_district_id pc01_block_id, replace
 
 /* recode roman numerals to avoid masala merge error */
 replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
+/* clean_roman_numerals(pc01_state_name), replace */
 
 /* manually fix some observations */
 replace pc01_block_name = "jharia cum jorapokhar cum sindri" if ///
@@ -78,6 +90,13 @@ drop _merge
 /* merge using and master block names into one variable */
 gen pc01_block_name = pc01_block_name_master
 replace pc01_block_name = pc01_block_name_using if mi(pc01_block_name_master)
+label variable pc01_block_name "Block Name"
+
+/* generate EBB dummy */
+gen ebb_dummy = 0 
+replace ebb_dummy = 1 if match_source != 6
+label variable ebb_dummy "Dummy variable for EBB status"
+drop match_source masala_dist
 
 /* generate unique identifiers for observations */
 gen id = _n
@@ -86,5 +105,18 @@ tostring id, replace
 /* drop variables which will be generates in future masala merges */
 drop id_using id_master pc01_block_name_master pc01_block_name_using
 
+/* clean up other variables */
+ren female_literacy ebb_f_lit_rate
+label variable ebb_f_lit_rate "Block female literacy rate (EBB)"
+ren cd_block_code ebb_block_id
+ren gender_gap_literacy ebb_lit_gender_gap
+label variable ebb_lit_gender_gap "Block gap in literacy rates by gender (EBB)"
+
 /* save merged dataset */
 save $ebb/ebbs_list_clean, replace
+
+/***********************************/
+/* Replicate first stage RD graphs */
+/***********************************/
+
+/* gen 
