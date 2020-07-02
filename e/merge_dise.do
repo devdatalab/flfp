@@ -25,7 +25,7 @@ replace dise_state = "jammu & kashmir" if dise_state == "jammu-and-kashmir"
 
 /* edit district names */
 
-replace district = "aurangabad" if district == "aurangabad maharashtra"
+replace district = "aurangabad" if district == "aurangabad (maharashtra)"
 
 foreach var in east west south north {
   replace district = "`var'" if district == "`var' delhi"
@@ -45,6 +45,18 @@ keep if year=="2007-2008"
 
 /* save temp dise dataset */
 save $tmp/dise_1.dta, replace
+
+use $tmp/dise_1.dta, clear
+
+/* create girls (>90%) variable */
+gen girlsch = 1 if enr_all_g/enr_all > 0.9
+
+/* gen enrollment variables for girlsch == 1 */
+ds enr*
+
+foreach var in `r(varlist)' {
+gen `var'_girlsch = `var' if girlsch == 1
+}
 
 /* collapse at state-disttrict-block level */
 collapse (sum) enr*, by(pc01_state_name pc01_district_name pc01_block_name)
@@ -122,8 +134,15 @@ drop match_source masala_dist
 /* drop missing block names obs */
 drop if mi(pc01_block_name)
 
+save $tmp/dise_4, replace
+
+use /scratch/pgupta/dise_4.dta, clear
+
 /* masala merge with block names from pc01 */
 masala_merge pc01_state_name pc01_state_id pc01_district_id pc01_district_name using $tmp/ebbs_district, s1(pc01_block_name) idmaster(id) idusing(id)
+
+/* insert manual matches */
+insert_manual_matches, manual_file(/scratch/pgupta/diseblock.csv) idmaster(id_master) idusing(id_using)
 
 /* drop merge variable */
 drop _merge
