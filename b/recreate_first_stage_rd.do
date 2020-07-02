@@ -42,6 +42,9 @@ foreach var of varlist _all {
 	}
 }
 
+/* drop villages with less than 100 residents */
+drop if pc01_pca_tot_p < 100
+
 /* collapse to block level */
 collapse (sum) pc01_pca_f_lit pc01_pca_tot_f pc01_pca_f_06 ///
     pc01_pca_m_lit pc01_pca_tot_m pc01_pca_m_06, ///
@@ -71,10 +74,11 @@ replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
 /* manually fix some observations */
 replace pc01_block_name = "jharia cum jorapokhar cum sindri" if ///
     pc01_block_name == "jhariacumjorapokharcumsindri"
-replace pc01_block_name = "tamar i" if pc01_block_name == "tamari"
-replace pc01_block_name = "hansi two" if pc01_block_name == "hansi2"
-replace pc01_block_name = "goalpokharpc01" if pc01_block_name == "goalpokhar2"
-replace pc01_block_name = "gopiballavpurpc01" if pc01_block_name == "gopiballavpur2"
+replace pc01_block_name = "hansi-1" if pc01_block_name == "hans2"
+replace pc01_block_name = "aaaa" if pc01_block_name == "goalpokhar2"
+replace pc01_block_name = "bbbb" if pc01_block_name == "gopiballavpur2" 
+replace pc01_block_name = "cccc" if pc01_block_name == "sikandarpurkaran"
+replace pc01_block_name = "tamar-1" if pc01_block_name == "tamari"
 
 /* generate unique identifiers (necessary for masala merge) */
 gen id = _n
@@ -117,16 +121,18 @@ ren gender_gap_literacy ebb_lit_gender_gap
 label variable ebb_lit_gender_gap "Block gap in literacy rates by gender (EBB)"
 
 /* save merged dataset */
-save $ebb/ebbs_list_clean, replace
+save $tmp/ebbs_list_clean, replace
 
 /***********************************/
 /* Replicate first stage RD graphs */
 /***********************************/
 
+/* graph a scatterplot with black dots representing EBBs
+(based on ebbs_list.dta coding, rather than the raw qualification metrics) */
 twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if ebb_dummy == 1, mcolor(black)) ///
-    (scatter pc01_pca_f_lit_rate pc01_pca_lit_gender_gap ///
-    if ebb_dummy == 0, mcolor(gs8)), ///
+    if ebb_dummy == 1, mcolor(black) msize(tiny)) ///
+    (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
+    if ebb_dummy == 0, mcolor(gs8) msize(tiny)), ///
     graphregion(color(white)) ///
     xtitle("Female Rural Literacy Rate") ///
     ytitle("Gender Gap in Rural Literacy") ///
@@ -134,7 +140,9 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     legend(off) ///
     xline(.4613, lcolor(black)) ///
     yline(.2159, lcolor(black)) ///
+    ylabel(-0.2 0 0.2 0.4 0.6) ///
     title(NPEGEL/KGBV Eligibility of Rural Blocks) ///
-    name(firststage_rd, replace) ///
-    
-graphout firststage_rd
+    name(firststagerd, replace)
+
+/* export graph */
+graphout firststagerd
