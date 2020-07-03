@@ -126,7 +126,7 @@ ren gender_gap_literacy ebb_lit_gender_gap
 label variable ebb_lit_gender_gap "Block gap in literacy rates by gender (EBB)"
 
 /* save merged dataset */
-save $tmp/ebbs_list_clean, replace
+save $ebb/ebbs_list_clean, replace
 
 /***********************************/
 /* Replicate first stage RD graphs */
@@ -151,3 +151,21 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
 
 /* export graph */
 graphout firststagerd
+
+/* binscatter for literacy rate RD */
+binscatter ebb_dummy pc01_pca_f_lit_rate, rd(0.4613) ///
+    xtitle("Female Rural Literacy Rate") ///
+    ytitle("Fraction of EBB Observations in Bin") ///
+    name(litraterd, replace)
+
+/* binscatter for gender gap in literacy rates RD */
+binscatter ebb_dummy pc01_pca_lit_gender_gap, rd(0.2159) ///
+    xtitle("Gender Gap in Rural Literacy") ///
+    ytitle("Fraction of EBB Observations in Bin") ///
+    name(gendergaprd, replace)
+
+/* combine binscatter graphs */
+graph combine litraterd gendergaprd, ycommon r(1) name(combinedrd, replace)
+
+/* export combined graph */
+graphout combinedrd
