@@ -92,6 +92,11 @@ tostring id, replace
 masala_merge pc01_state_id pc01_district_id using $tmp/ebbs_list_clean, ///
     s1(pc01_block_name) idmaster(id) idusing(id)
 
+/* fix block names that were edited to avoid false positives in the merge */
+replace pc01_block_name_master = "goalpokhar2" if pc01_block_name_master == "aaaa"
+replace pc01_block_name_master = "gopiballavpur2" if pc01_block_name_master == "bbbb"
+replace pc01_block_name_master = "sikandar purkaran" if pc01_block_name_master == "cccc"
+
 /* drop merge variable */
 drop _merge
 
