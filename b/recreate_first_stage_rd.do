@@ -1,3 +1,6 @@
+/* PACKAGES TO DOWNLOAD */
+ssc install binscatter
+
 /*********************/
 /* Clean EBB dataset */
 /*********************/
