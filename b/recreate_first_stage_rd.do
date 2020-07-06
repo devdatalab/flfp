@@ -81,6 +81,8 @@ replace pc01_block_name = "hansi-1" if pc01_block_name == "hans2"
 replace pc01_block_name = "aaaa" if pc01_block_name == "goalpokhar2"
 replace pc01_block_name = "bbbb" if pc01_block_name == "gopiballavpur2" 
 replace pc01_block_name = "cccc" if pc01_block_name == "sikandarpurkaran"
+replace pc01_block_name = "dddd" if pc01_block_name == "sagar" ///
+    & pc01_state_id == 23
 replace pc01_block_name = "tamar-1" if pc01_block_name == "tamari"
 
 /* generate unique identifiers (necessary for masala merge) */
@@ -99,6 +101,7 @@ masala_merge pc01_state_id pc01_district_id using $tmp/ebbs_list_clean, ///
 replace pc01_block_name_master = "goalpokhar2" if pc01_block_name_master == "aaaa"
 replace pc01_block_name_master = "gopiballavpur2" if pc01_block_name_master == "bbbb"
 replace pc01_block_name_master = "sikandar purkaran" if pc01_block_name_master == "cccc"
+replace pc01_block_name_master = "sagar" if pc01_block_name_master == "dddd"
 
 /* drop merge variable */
 drop _merge
