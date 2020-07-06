@@ -86,6 +86,9 @@ replace pc01_block_name = "dddd" if pc01_block_name == "sagar" ///
 replace pc01_block_name = "eeee" if pc01_block_name == "peddapalle"
 replace pc01_block_name = "ffff" if pc01_block_name == "gudipala"
 replace pc01_block_name = "gggg" if pc01_block_name == "mukhed"
+replace pc01_block_name = "hhhh" if pc01_block_name == "baisi"
+replace pc01_block_name = "iiii" if pc01_block_name == "tandur" ///
+    & pc01_district_id == 1
 replace pc01_block_name = "tamar-1" if pc01_block_name == "tamari"
 
 /* generate unique identifiers (necessary for masala merge) */
@@ -108,6 +111,8 @@ replace pc01_block_name_master = "sagar" if pc01_block_name_master == "dddd"
 replace pc01_block_name_master = "peddapalle" if pc01_block_name_master == "eeee"
 replace pc01_block_name_master = "gudipala" if pc01_block_name_master == "ffff"
 replace pc01_block_name_master = "mukhed" if pc01_block_name_master == "gggg"
+replace pc01_block_name_master = "baisi" if pc01_block_name_master == "hhhh"
+replace pc01_block_name_master = "tandur" if pc01_block_name_master == "iiii"
 
 /* drop merge variable */
 drop _merge
