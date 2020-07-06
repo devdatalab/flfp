@@ -1,3 +1,6 @@
+/* PACKAGES TO DOWNLOAD */
+ssc install binscatter
+
 /*********************/
 /* Clean EBB dataset */
 /*********************/
@@ -92,6 +95,11 @@ tostring id, replace
 masala_merge pc01_state_id pc01_district_id using $tmp/ebbs_list_clean, ///
     s1(pc01_block_name) idmaster(id) idusing(id)
 
+/* fix block names that were edited to avoid false positives in the merge */
+replace pc01_block_name_master = "goalpokhar2" if pc01_block_name_master == "aaaa"
+replace pc01_block_name_master = "gopiballavpur2" if pc01_block_name_master == "bbbb"
+replace pc01_block_name_master = "sikandar purkaran" if pc01_block_name_master == "cccc"
+
 /* drop merge variable */
 drop _merge
 
@@ -121,7 +129,7 @@ ren gender_gap_literacy ebb_lit_gender_gap
 label variable ebb_lit_gender_gap "Block gap in literacy rates by gender (EBB)"
 
 /* save merged dataset */
-save $tmp/ebbs_list_clean, replace
+save $ebb/ebbs_list_clean, replace
 
 /***********************************/
 /* Replicate first stage RD graphs */
@@ -146,3 +154,21 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
 
 /* export graph */
 graphout firststagerd
+
+/* binscatter for literacy rate RD */
+binscatter ebb_dummy pc01_pca_f_lit_rate, rd(0.4613) ///
+    xtitle("Female Rural Literacy Rate") ///
+    ytitle("Fraction of EBB Observations in Bin") ///
+    name(litraterd, replace)
+
+/* binscatter for gender gap in literacy rates RD */
+binscatter ebb_dummy pc01_pca_lit_gender_gap, rd(0.2159) ///
+    xtitle("Gender Gap in Rural Literacy") ///
+    ytitle("Fraction of EBB Observations in Bin") ///
+    name(gendergaprd, replace)
+
+/* combine binscatter graphs */
+graph combine litraterd gendergaprd, ycommon r(1) name(combinedrd, replace)
+
+/* export combined graph */
+graphout combinedrd
