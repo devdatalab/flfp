@@ -48,6 +48,8 @@ save $tmp/dise_1.dta, replace
 
 use $tmp/dise_1.dta, clear
 
+replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
+
 /* create girls (>90%) variable */
 gen girlsch = 1 if enr_all_g/enr_all > 0.9
 
@@ -76,6 +78,15 @@ replace pc01_district_name = "khandwa" if pc01_district_name == "east nimar"
 replace pc01_district_name = "khargone" if pc01_district_name == "west nimar"
 replace pc01_district_name = "balasore" if pc01_district_name == "baleshwar"
 replace pc01_district_name = "keonjhar" if pc01_district_name == "kendujhar"
+
+replace pc01_block_name = "jhariacumjorapokharcumsindri" if ///	
+	pc01_block_name == "jharia cum jorapokhar cum sindri"
+	replace pc01_block_name = "hans2" if pc01_block_name == "hansi-1"
+	replace pc01_block_name = "goalpokhar2" if pc01_block_name == "aaaa"
+	replace pc01_block_name = "gopiballavpur2" if pc01_block_name == "bbbb"
+	replace pc01_block_name = "sikandarpurkaran" if pc01_block_name == "cccc"
+replace pc01_block_name = "tamari" if pc01_block_name == "tamar-1"
+
 
 /* save temp dataset */
 save  $tmp/ebbs_district, replace
@@ -142,7 +153,7 @@ use /scratch/pgupta/dise_4.dta, clear
 masala_merge pc01_state_name pc01_state_id pc01_district_id pc01_district_name using $tmp/ebbs_district, s1(pc01_block_name) idmaster(id) idusing(id)
 
 /* insert manual matches */
-insert_manual_matches, manual_file(/scratch/pgupta/diseblock.csv) idmaster(id_master) idusing(id_using)
+insert_manual_matches, manual_file(/scratch/pgupta/manual_dise.csv) idmaster(id_master) idusing(id_using)
 
 /* drop merge variable */
 drop _merge
