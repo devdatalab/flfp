@@ -83,6 +83,9 @@ replace pc01_block_name = "bbbb" if pc01_block_name == "gopiballavpur2"
 replace pc01_block_name = "cccc" if pc01_block_name == "sikandarpurkaran"
 replace pc01_block_name = "dddd" if pc01_block_name == "sagar" ///
     & pc01_state_id == 23
+replace pc01_block_name = "eeee" if pc01_block_name == "peddapalle"
+replace pc01_block_name = "ffff" if pc01_block_name == "gudipala"
+replace pc01_block_name = "gggg" if pc01_block_name == "mukhed"
 replace pc01_block_name = "tamar-1" if pc01_block_name == "tamari"
 
 /* generate unique identifiers (necessary for masala merge) */
@@ -102,6 +105,9 @@ replace pc01_block_name_master = "goalpokhar2" if pc01_block_name_master == "aaa
 replace pc01_block_name_master = "gopiballavpur2" if pc01_block_name_master == "bbbb"
 replace pc01_block_name_master = "sikandar purkaran" if pc01_block_name_master == "cccc"
 replace pc01_block_name_master = "sagar" if pc01_block_name_master == "dddd"
+replace pc01_block_name_master = "peddapalle" if pc01_block_name_master == "eeee"
+replace pc01_block_name_master = "gudipala" if pc01_block_name_master == "ffff"
+replace pc01_block_name_master = "mukhed" if pc01_block_name_master == "gggg"
 
 /* drop merge variable */
 drop _merge
