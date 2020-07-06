@@ -61,7 +61,7 @@ keep  _pc01_block_name_master id_master_b match_look1 match_look2
 /* rename relevant variables */
 rename match_look2 _pc01_block_name_using
 rename id_master_b id_master
-rename match_look1 id_match
+rename match_look1 id_using
 
 /* order vars */
 order id_master id_using _pc01_block_name_master _pc01_block_name_using
