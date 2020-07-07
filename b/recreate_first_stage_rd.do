@@ -24,8 +24,12 @@ ren cd_block_name pc01_block_name
 drop if pc01_block_name == "forest villages"
 
 /* generate unique identifiers for observations (necessary for masala merge) */
-gen id = _n
-tostring id, replace
+tostring pc01_state_id pc01_district_id, replace
+gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name
+destring pc01_state_id pc01_district_id, replace
+
+/* recode roman numerals */
+replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
 
 /* save as temporary file */
 save $tmp/ebbs_list_clean, replace
@@ -67,33 +71,31 @@ label variable pc01_pca_lit_gender_gap "Block gap in literacy rates by gender (P
 /* drop total variables used to calculate rates */
 drop pc01_pca_f_lit pc01_pca_tot_f pc01_pca_f_06 pc01_pca_m_lit pc01_pca_tot_m pc01_pca_m_06 
 
-/* destring ID values (need standard data type for masala merge) */
-destring pc01_state_id pc01_district_id pc01_block_id, replace
-
 /* recode roman numerals to avoid masala merge error */
 replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
-/* clean_roman_numerals(pc01_state_name), replace */
 
 /* manually fix some observations */
 replace pc01_block_name = "jharia cum jorapokhar cum sindri" if ///
     pc01_block_name == "jhariacumjorapokharcumsindri"
 replace pc01_block_name = "hansi-1" if pc01_block_name == "hans2"
 replace pc01_block_name = "aaaa" if pc01_block_name == "goalpokhar2"
-replace pc01_block_name = "bbbb" if pc01_block_name == "gopiballavpur2" 
+replace pc01_block_name = "bbbb" if pc01_block_name == "gopiballavpur2"
 replace pc01_block_name = "cccc" if pc01_block_name == "sikandarpurkaran"
 replace pc01_block_name = "dddd" if pc01_block_name == "sagar" ///
-    & pc01_state_id == 23
+    & pc01_state_id == "23"
 replace pc01_block_name = "eeee" if pc01_block_name == "peddapalle"
 replace pc01_block_name = "ffff" if pc01_block_name == "gudipala"
 replace pc01_block_name = "gggg" if pc01_block_name == "mukhed"
 replace pc01_block_name = "hhhh" if pc01_block_name == "baisi"
 replace pc01_block_name = "iiii" if pc01_block_name == "tandur" ///
-    & pc01_district_id == 1
+    & pc01_district_id == "1"
 replace pc01_block_name = "tamar-1" if pc01_block_name == "tamari"
 
 /* generate unique identifiers (necessary for masala merge) */
-gen id = _n
-tostring id, replace
+gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name
+
+/* destring IDs */
+destring pc01_state_id pc01_district_id pc01_block_id, replace
 
 /******************************/
 /* Merge Cleaned EBB and PC01 */
