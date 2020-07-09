@@ -20,7 +20,7 @@ drop if dup > 1
 save $tmp/match1, replace
 
 /* import new unmatched merge file */
-import delimited /scratch/pgupta/unmatched_observations_25818.csv, varnames(1) clear
+import delimited /scratch/pgupta/unmatched_observations_15440.csv, varnames(1) clear
 
 /* rename variables with prefix */
 rename id_match id_match_b
@@ -36,9 +36,14 @@ drop if dup > 1
 save $tmp/match2, replace
 
 /* merge old and new datasets */
-merge 1:1 _pc01_stat~e  _pc01_stat~d  _pc01_dist~d  _pc01_dist~e  _pc01_bloc~r _pc01_block_name_using  using $tmp/match1
+merge m:1 _pc01_stat~e  _pc01_stat~d  _pc01_dist~d  _pc01_dist~e  _pc01_bloc~r _pc01_block_name_using  using $tmp/match1
 
 /* drop dup */
+drop dup
+
+sort _pc01_stat~e  _pc01_stat~d  _pc01_dist~d  _pc01_dist~e  _pc01_bloc~r _pc01_block_name_using
+quietly by _pc01_stat~e  _pc01_stat~d  _pc01_dist~d  _pc01_dist~e  _pc01_bloc~r _pc01_block_name_using: gen dup = cond(_N==1,0,_n)
+drop if dup > 1
 drop if dup == 1
 
 /* drop extra variables */
@@ -67,6 +72,10 @@ rename match_look1 id_using
 order id_master id_using _pc01_block_name_master _pc01_block_name_using
 
 /* drop master only obs */
+drop if mi(id_master)
+
+/* drop comma delimiters */
+destring id_master, replace ignore(-)
 drop if mi(id_master)
 
 /* string id variables */
