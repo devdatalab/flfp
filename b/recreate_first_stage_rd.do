@@ -97,9 +97,15 @@ gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name
 /* destring IDs */
 destring pc01_state_id pc01_district_id pc01_block_id, replace
 
+/* save dataset */
+save $tmp/pc01_lit_clean, replace
+
 /******************************/
 /* Merge Cleaned EBB and PC01 */
 /******************************/
+
+/* open cleaned PC01 dataset */
+use $tmp/pc01_lit_clean, clear
 
 /* use masala merge to fuzzy merge datasets */
 masala_merge pc01_state_id pc01_district_id using $tmp/ebbs_list_clean, ///
@@ -131,18 +137,34 @@ label variable ebb_dummy "Dummy variable for EBB status"
 drop match_source masala_dist
 
 /* generate unique identifiers for observations */
-gen id = _n
-tostring id, replace
+tostring pc01_state_id pc01_district_id, replace
+gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name
+destring pc01_state_id pc01_district_id, replace
 
 /* drop variables which will be generates in future masala merges */
 drop id_using id_master pc01_block_name_master pc01_block_name_using
 
+/* make EBB lit rates into decimals (same format as PC01) */
+gen ebb_f_lit_rate = (female_literacy / 100)
+gen ebb_lit_gender_gap = (gender_gap_literacy / 100)
+drop female_literacy gender_gap_literacy
+
 /* clean up other variables */
-ren female_literacy ebb_f_lit_rate
 label variable ebb_f_lit_rate "Block female literacy rate (EBB)"
 ren cd_block_code ebb_block_id
-ren gender_gap_literacy ebb_lit_gender_gap
 label variable ebb_lit_gender_gap "Block gap in literacy rates by gender (EBB)"
+
+/* generate treatment variable (treated != EBB, sometimes) */
+gen treated = 0
+
+/* all EBBs should be treated */
+replace treated = 1 if ebb_dummy == 1
+
+/* "expanded to include blocks with rural female literacy rates of less than 45%,
+irrespective of the gender gap */
+replace treated = 1 if pc01_pca_f_lit_rate < 0.45
+
+
 
 /* save merged dataset */
 save $ebb/ebbs_list_clean, replace
