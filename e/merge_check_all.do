@@ -62,15 +62,15 @@ foreach var in blackboard num_classrooms toilet_boys elec library ///
 }
 
 /* keep only year 2007-2008 */
-// keep if year=="2007-2008"
+keep if year=="2007-2008" | year=="2008-2009" | year=="2009-2010"
 
 /*  destring facility varaibles*/
 destring facility*, replace
 
 /* save temp dise dataset */
-save $tmp/dise_1_all.dta, replace
+save $tmp/dise_1_3.dta, replace
 
-use $tmp/dise_1_all.dta, clear
+use $tmp/dise_1_3.dta, clear
 
 replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
 
@@ -88,7 +88,7 @@ gen `var'_girlsch = `var' if girlsch == 1
 collapse (sum) facility* enr*, by(year pc01_state_name pc01_district_name pc01_block_name)
 
 /* save new dataset */
-save $tmp/dise_2_all.dta, replace
+save $tmp/dise_2_3.dta, replace
 
 /* gen district level ebbs dataset */
 
@@ -132,7 +132,7 @@ drop dup
 save $tmp/ebbs_district2, replace
 
 /* use temp dise dataset*/
-use $tmp/dise_2_all, clear
+use $tmp/dise_2_3, clear
 
 /* masala merge with PC01 */
 
@@ -161,9 +161,9 @@ tostring id, replace
 drop id_using id_master pc01_district_name_master pc01_district_name_using
 
 /* save temp dataset */
-save $tmp/dise_3_all, replace
+save $tmp/dise_3_3, replace
 
-use $tmp/dise_3_all, clear
+use $tmp/dise_3_3, clear
 
 /* drop merge variables */
 drop match_source masala_dist
@@ -171,9 +171,9 @@ drop match_source masala_dist
 /* drop missing block names obs */
 drop if mi(pc01_block_name)
 
-save $tmp/dise_4_all, replace
+save $tmp/dise_4_3, replace
 
-use /scratch/pgupta/dise_4_all.dta, clear
+use /scratch/pgupta/dise_4_3.dta, clear
 
 /* drop missing*/
 foreach var in pc01_state_name pc01_state_id pc01_district_name pc01_district_id pc01_block_name  {
