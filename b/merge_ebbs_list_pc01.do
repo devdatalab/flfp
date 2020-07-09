@@ -164,7 +164,5 @@ replace treated = 1 if ebb_dummy == 1
 irrespective of the gender gap */
 replace treated = 1 if pc01_pca_f_lit_rate < 0.45
 
-
-
 /* save merged dataset */
 save $ebb/ebbs_list_clean, replace

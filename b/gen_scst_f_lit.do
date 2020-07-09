@@ -26,13 +26,12 @@ gen st_pop = 0
 replace st_pop = 1 if sc_st == 2
 
 collapse (sum) sc_f_lit sc_pop st_f_lit st_pop, ///
-    by(pc01_state_id pc01_district_id pc01_subdistrict_id pc01_village_id)
+    by(pc01_state_id pc01_village_id)
 
-gen secc_sc_f_lit_rate = (sc_f_lit / sc_pop)
-drop if mi(secc_sc_f_lit_rate)
-label var secc_sc_f_lit_rate
+drop if sc_pop == 0 & st_pop == 0
 
-gen secc_st_f_lit_rate = (st_f_lit / st_pop)
-drop if mi(secc_st_f_lit_rate)
+save $tmp/tripura_scst, replace
 
-drop sc_f_lit sc_pop st_f_lit st_pop
+merge 1:1 pc01_state_id pc01_village_id ///
+    using $pc01/pc01r_pca_clean
+
