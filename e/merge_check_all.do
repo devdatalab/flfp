@@ -141,7 +141,7 @@ gen id = _n
 tostring id, replace
 
 /* use masala merge to fuzzy merge datasets */
-masala_merge pc01_state_name using $tmp/ebbs_district2, s1(pc01_district_name) idmaster(id) idusing(id)
+// masala_merge pc01_state_name using $tmp/ebbs_district2, s1(pc01_district_name) idmaster(id) idusing(id)
 
 /* merge using and master names */
 gen pc01_district_name = pc01_district_name_master
@@ -180,7 +180,7 @@ foreach var in pc01_state_name pc01_state_id pc01_district_name pc01_district_id
 masala_merge pc01_state_name pc01_state_id pc01_district_id pc01_district_name using $tmp/ebbs_district, s1(pc01_block_name) idmaster(id) idusing(id)
 
 /* insert manual matches */
-insert_manual_matches, manual_file(/scratch/pgupta/manual_dise.csv) idmaster(id_master) idusing(id_using)
+// insert_manual_matches, manual_file(/scratch/pgupta/manual_dise.csv) idmaster(id_master) idusing(id_using)
 
 /* drop merge variable */
 drop _merge
