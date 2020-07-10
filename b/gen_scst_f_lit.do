@@ -9,29 +9,60 @@ save $tmp/tripura_household_clean, replace
 use $secc/final/dta/tripura_members_clean, clear
 merge m:1 mord_hh_id using $tmp/tripura_household_clean
 
-keep if sex == 2
-keep if sc_st == 1 | sc_st ==  2
-keep if age > 6 & age < 100
+/* drop if missing village ID */
+drop if mi(pc01_village_id)
 
-gen sc_f_lit = 0
-replace sc_f_lit = 1 if sc_st == 1 & ed != 1
+/* drop if educational attainment is missing or "other" */
+drop if ed == 8 | ed == -9999
 
-gen sc_pop = 0
-replace sc_pop = 1 if sc_st == 1
+/* drop if sex is not male or female */
+drop if sex != 1 & sex != 2
 
-gen st_f_lit = 0
-replace st_f_lit = 1 if sc_st == 2 & ed != 1
+/* drop if missing age or if age is  high */
+drop if age == -9999 | age > 80
 
-gen st_pop = 0
-replace st_pop = 1 if sc_st == 2
+/* recode educational attainment to total years in school */
+recode ed (1 = 0) (2 = 2) (3 = 5) (4 = 8) (5 = 10) (6 = 12) (7 = 14), gen(educ_years)
 
-collapse (sum) sc_f_lit sc_pop st_f_lit st_pop, ///
-    by(pc01_state_id pc01_village_id)
+/* make certain educational attainment levels into dummies */
 
-drop if sc_pop == 0 & st_pop == 0
+/* generate all dummy variables */
+foreach edu in lit primary middle {
+  gen `edu' = 0
+}
 
-save $tmp/tripura_scst, replace
+replace lit = 1 if ed > 1
+replace primary = 1 if ed > 2
+replace middle = 1 if ed > 3
 
-merge 1:1 pc01_state_id pc01_village_id ///
-    using $pc01/pc01r_pca_clean
+/* collapse educational attainment variables on village ID and age */
+collapse (mean) educ_years lit primary middle, ///
+    by(pc01_state_id pc01_village_id age sex)
 
+/* generate sex-based educational attainment variables */
+foreach edu in educ_years lit primary middle {
+  gen m_`edu' = `edu' if sex == 1
+}
+
+foreach edu in educ_years lit primary middle {
+  gen f_`edu' = `edu' if sex == 2
+}
+
+/* collapse again, to get rid of sex variables */
+collapse (mean) m_educ_years m_lit m_primary m_middle ///
+    f_educ_years f_lit f_primary f_middle, ///
+    by(pc01_state_id pc01_village_id age)
+
+/* reshape dataset to wide format, indexed by village ID */
+reshape wide m_educ_years m_lit m_primary m_middle ///
+    f_educ_years f_lit f_primary f_middle, ///
+    i(pc01_state_id pc01_village_id) j(age)
+
+/* merge with PC01 data */
+merge 1:1 pc01_state_id pc01_village_id using $tmp/pc01_secc_merge
+
+/* drop unmatched observations */
+drop if _merge == 1
+
+/* save merged dataset */
+save $tmp/pc01_secc_merge, replace
