@@ -1,5 +1,6 @@
 /* Merge DISE data to PC01 */
 
+/*
 /* use basic DISE dataset */
 use $iec/dise/dise_basic_clean, clear
 
@@ -92,17 +93,33 @@ replace pc01_block_name=strtrim(pc01_block_name)
 /* save new dataset */
 save $tmp/dise_2_all.dta, replace
 
+*/
 ********************************
 *** MERGE WITH DISE-PC01 KEY ***
 ********************************
+
+/* use dise all dataset */
+use $tmp/dise_2_all.dta, replace
+
+/*remove spaces */
+replace pc01_block_name=strtrim(pc01_block_name)
 
 /*merge with dise-pc01 key */
 merge m:1 pc01_state_name pc01_district_name pc01_block_name using $tmp/dise_pc01_key
 
 /* keep matches */
-keep if_merge == 3
+keep if _merge == 3
 
 /* drop merge variable*/
+drop _merge
+
+/* merge EBB data */
+merge m:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/ebbs_list_clean
+
+/* drop unmatched obs */
+keep if _merge==3
+
+/* drop merge variable  */
 drop _merge
 
 /* save dataset */

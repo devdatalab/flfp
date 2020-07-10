@@ -51,7 +51,20 @@ save $tmp/ebbs_district2, replace
 /* use basic DISE dataset */
 use $iec/dise/dise_basic_clean, clear
 
-keep if year=="2007-2008"
+/* remove trailing and leading spaces */
+replace dise_block_name=strtrim(dise_block_name)
+
+/* gen a year var for merge */
+gen year11 = substr(year, 1, 4)
+drop year
+rename year11 year
+
+/* destring year */
+destring year, replace
+
+/* keep when vilcd appears first */
+by vilcd, sort: egen min_year = min(year)
+keep if year == min_year
 
 /* keep only id variables */
 keep dise_block_name dise_state district
@@ -130,6 +143,9 @@ drop match_source masala_dist
 /* drop missing block names obs */
 drop if mi(pc01_block_name)
 
+save $tmp/key1, replace
+
+use $tmp/key1, clear
 ***********
 /* BLOCK */
 ***********
