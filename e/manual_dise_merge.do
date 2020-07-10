@@ -20,7 +20,7 @@ drop if dup > 1
 save $tmp/match1, replace
 
 /* import new unmatched merge file */
-import delimited /scratch/pgupta/unmatched_observations_15440.csv, varnames(1) clear
+import delimited /scratch/pgupta/unmatched_observations_77024.csv, varnames(1) clear
 
 /* rename variables with prefix */
 rename id_match id_match_b
@@ -77,6 +77,9 @@ drop if mi(id_master)
 /* drop comma delimiters */
 destring id_master, replace ignore(-)
 drop if mi(id_master)
+
+/* drop if id using missing */
+drop if mi(id_using)
 
 /* string id variables */
 tostring id*, replace
