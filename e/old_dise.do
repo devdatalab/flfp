@@ -1,89 +1,143 @@
-***************************
-**** ADD OLD DISE DATA ****
-***************************
+*********************************************
+**** CLEAN AND MERGE OLD & NEW DISE DATA ****
+*********************************************
 
-/* create vilcd key to match old dise */
+**********************************************************
+/* merge new dise data with enrollment and facility data */
+**********************************************************
 
-use $tmp/dise_0, clear
+/* use basic DISE dataset */
+use $iec/dise/dise_basic_clean, clear
 
-destring blackboard num_classrooms toilet_boys elec library toilet_common toilet_girls wall playground water, replace
-
-collapse (sum) enr_all_g* enr_all_b*  blackboard num_classrooms toilet_boys elec library ///
-    toilet_common toilet_girls wall playground water, by(year dise_state district dise_block vilcd)
-
-save $tmp/dise_0_c, replace
-
-keep if year == "2005-2006"
-
-keep dise_state district dise_block vilcd
-
-foreach var in dise_state district dise_block vilcd {
-replace `var'=strtrim(`var')
-}
-
-sort dise_state district dise_block vilcd
-quietly by dise_state district dise_block vilcd: gen dup = cond(_N==1,0,_n)
-drop if dup >1
-
-drop dup
-
-save $tmp/vilcd_key, replace
-
-***************************
-
-/* clean old dise data */
-
-use /scratch/pn/dise/education.dta, clear
-
-rename vilid vilcd
-
-keep enr_sc* year vilcd schcd lib  blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play
-
-keep if inlist(year, 1, 2, 3, 4)
-
-tostring year, replace
-
-replace year = "2001-2002" if year == "1"
-replace year = "2002-2003" if year == "2"
-replace year = "2003-2004" if year == "3"
-replace year = "2004-2005" if year == "4"
-
-sort year vilcd schcd
-quietly by year vilcd schcd: gen dup = cond(_N==1,0,_n)
-drop if dup > 1
-
-collapse (sum) enr* lib blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play, by(year vilcd)
-
-save $tmp/dise_old.dta, replace
-
-***************************
-
-/* merge old dise with new dise identifiers */
-
-use $tmp/dise_old, replace
-
-merge m:1  vilcd using $tmp/vilcd_key
+/* merge with DISE enrollment data */
+merge m:1 dise_state year vilcd schcd using $iec/dise/dise_enr_clean
 
 keep if _merge == 3
 
 drop _merge
 
+/* merge witth  facility data */
+merge m:1 dise_state year vilcd schcd using $iec/dise/dise_facility_clean.dta
+
+keep if _merge == 3
+
+drop _merge
+
+save $tmp/dise_0, replace
+
+****************************************
+/* create vilcd key to match old dise */
+****************************************
+
+/* use new dise data */
+use $tmp/dise_0, clear
+
+/* destring variables for collapse */
+destring blackboard num_classrooms toilet_boys elec library toilet_common toilet_girls wall playground water, replace
+
+/* collapse enr and facility varaibles at vilcd level */
+collapse (sum) enr_all_g* enr_all_b*  blackboard num_classrooms toilet_boys elec library ///
+    toilet_common toilet_girls wall playground water, by(year dise_state district dise_block vilcd)
+
+/* save collapse dataset */
+save $tmp/dise_0_c, replace
+
+/* keep only single year of data for key */
+keep if year == "2005-2006"
+
+/* keep only id variables */
+keep dise_state district dise_block vilcd
+
+/* remove leading and trailing spaces in all obs */
+foreach var in dise_state district dise_block vilcd {
+replace `var'=strtrim(`var')
+}
+
+/* drop duplicates */
+sort dise_state district dise_block vilcd
+quietly by dise_state district dise_block vilcd: gen dup = cond(_N==1,0,_n)
+drop if dup >1
+
+/* drop dup variable */
+drop dup
+
+/* save vilcd level key */
+save $tmp/vilcd_key, replace
+
+*************************
+/* clean old dise data */
+*************************
+
+/* use uncleaned old dise data */
+use /scratch/pn/dise/education.dta, clear
+
+/* rename vilid var */
+rename vilid vilcd
+
+/* keep enr, facility, id variables */
+keep enr_sc* year vilcd schcd lib  blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play
+
+/* keep data from 2001-04 */
+keep if inlist(year, 1, 2, 3, 4)
+
+/*  convert year to string */
+tostring year, replace
+
+/* edit year var to match new dise */
+replace year = "2001-2002" if year == "1"
+replace year = "2002-2003" if year == "2"
+replace year = "2003-2004" if year == "3"
+replace year = "2004-2005" if year == "4"
+
+/* drop duplicates */
+sort year vilcd schcd
+quietly by year vilcd schcd: gen dup = cond(_N==1,0,_n)
+drop if dup > 1
+
+/* collapse at vilcd level */
+collapse (sum) enr* lib blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play, by(year vilcd)
+
+/* save cleaned dise data */
+save $tmp/dise_old.dta, replace
+
+**********************************************
+/* merge old dise with new dise identifiers */
+**********************************************
+
+/* use cleaned dise data */
+use $tmp/dise_old, replace
+
+/* mergr with vilcd key */
+merge m:1  vilcd using $tmp/vilcd_key
+
+/* keep only matched obs */
+keep if _merge == 3
+
+/* drop merge variable */
+drop _merge
+
+/* save new dataset */
 save $tmp/dise_old1, replace
 
-***************************
-
+***************************************
 /* merge old dise with new dise data */
+***************************************
 
+/* use new dise collapsed data */
 use $tmp/dise_0_c, clear
 
+/* merge with old dise collapsed data */
 merge m:1 year dise_state district dise_block_name vilcd using $tmp/dise_old1
 
+/* replace enr vars from old dise */
 foreach var in b1 b2 b3 b4 b5 b6 b7 b8 g1 g2 g3 g4 g5 g6 g7 g8 {
   replace enr_all_`var' = enr_sc`var' if mi(enr_all_`var')
 }
 
+/* drop old enr vars */
 drop enr_sc*
 
+/* replace facility vars from old dise */
 replace num_classrooms = clrooms if mi(num_classrooms)
 replace toilet_boys = toiletb if mi(toilet_boys)
 replace toilet_girls = toilet_g if mi(toilet_girls)
@@ -92,91 +146,16 @@ replace library = lib if mi(library)
 replace wall = bndrywall if mi(wall)
 replace playground = play if mi(playground)
 
+/* drop old facility vars */
 drop clrooms toilet_g toilet_c toiletb lib bndrywall play
 
+/* drop merge var */
 drop _merge
 
+/* drop enr vars other than primary */
 foreach var in b9 b10 b11 b12 g9 g10 g11 g12 g b {
   drop enr_all_`var'
 }
 
+/* save old-new dise data */
 save $tmp/dise_old_new, replace
-
-
-/*
-
-******************************************
-
-/* old dise merge new dise */
-
-use /scratch/pn/dise/education.dta, clear
-
-rename vilid vilcd
-
-rename blkid pc01_block_id
-
-rename distid pc01_district_id
-
-rename state pc01_state_id
-
-keep enr_sc* year pc01_state_id pc01_district_id pc01_block_id vilcd schcd
-
-drop pc01_state_id pc01_district_id pc01_block_id
-
-// keep if year == 12
-
-// collapse (sum) enr*, by(year pc01_stat_id pc01_district_id pc01_block_id vilcd)
-
-keep if inlist(year, 1, 2, 3, 4)
-
-tostring year, replace
-
-replace year = "2001-2002" if year == "1"
-replace year = "2002-2003" if year == "2"
-replace year = "2003-2004" if year == "3"
-replace year = "2004-2005" if year == "4"
-
-sort year vilcd schcd
-quietly by year vilcd schcd: gen dup = cond(_N==1,0,_n)
-drop if dup > 1
-
-collapse (sum) enr*, by(year vilcd)
-
-save $tmp/dise_old.dta, replace
-
-use $tmp/dise_0, clear
-
-collapse (sum) enr*, by(year dise_state district dise_block vilcd)
-
-use $tmp/dise_0_c, clear
-
-merge m:1 year vilcd using $tmp/dise_old, force
-
-
-*****
-
-use $tmp/dise_0_c, clear
-
-keep if year == "2005-2006"
-
-keep dise_state district dise_block vilcd
-
-foreach var in dise_state district dise_block vilcd {
-replace `var'=strtrim(`var')
-}
-
-sort dise_state district dise_block vilcd
-quietly by dise_state district dise_block vilcd: gen dup = cond(_N==1,0,_n)
-drop if dup >1
-
-drop dup
-
-save $tmp/vilcd_key, replace
-
-*****
-
-use $tmp/dise_old, replace
-
-// keep if  year == "2004-2005"
-
-// merge m:1  vilcd using $tmp/vilcd_key
