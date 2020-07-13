@@ -3,7 +3,7 @@
 /***********/
 
 /* global of most state names */
-global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry rajasthan sikkim tamilnadu telangana tripura uttarakhand uttarpradesh westbengal
+global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry sikkim tamilnadu telangana tripura uttarakhand uttarpradesh westbengal
 
 /* these states don't have PC01 IDs in the SECC datasets */
 global statelist2 karnataka punjab rajasthan
