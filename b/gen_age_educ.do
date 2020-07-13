@@ -76,7 +76,7 @@ foreach state in $statelist {
   /* Merge with Master PC01 Dataset */
   /**********************************/
   
-  /* reshape age as wide (unique on just household ID now) */
+  /* reshape age as wide (unique on just village ID now) */
   reshape wide m_educ_years m_lit m_primary m_middle ///
       f_educ_years f_lit f_primary f_middle, ///
       i(pc01_state_id pc01_village_id) j(age)
@@ -84,15 +84,15 @@ foreach state in $statelist {
   /* merge with PC01 data */
   merge 1:1 pc01_state_id pc01_village_id using $pc01/pc01r_pca_clean
 
-  /* generate match rate */
+  /* generate %  match rate */
   egen unmatched = total(_merge == 1)
   egen matched = total(_merge == 3)
-  replace match_rate = matched / (unmatched + matched)
+  gen match_rate = matched / (unmatched + matched)
 
   /* drop unmatched observations */
   keep if _merge == 3
 
-  /* drop extraneous variables to facilitate next state merge */
+  /* drop extraneous variables */
   drop _merge matched unmatched
 
   /* save merged dataset */
@@ -109,7 +109,7 @@ set obs 0
 /* set temporary variable to missing */
 gen `temp' = .
 
-/* append PC01 and SECC merge temporary files */
+/* append PC01 and SECC merge temporary files to create master file */
 foreach state in $statelist {
   append using $tmp/`state'_pc01_secc_merge
 }
