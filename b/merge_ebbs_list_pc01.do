@@ -82,7 +82,7 @@ replace pc01_block_name = "ffff" if pc01_block_name == "gudipala"
 replace pc01_block_name = "gggg" if pc01_block_name == "mukhed"
 replace pc01_block_name = "hhhh" if pc01_block_name == "baisi"
 replace pc01_block_name = "iiii" if pc01_block_name == "tandur" ///
-    & pc01_district_id == "1"
+    & pc01_district_name == "adilabad"
 replace pc01_block_name = "tamar-1" if pc01_block_name == "tamari"
 
 /* fix EBBs which have no name in PC01 ("forest villages" in ebbs_list) */
