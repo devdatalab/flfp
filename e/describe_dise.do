@@ -48,10 +48,12 @@ foreach var in avg0203 avg0406 avg0709 avg1012 {
 replace pc01_pca_f_lit_rate = pc01_pca_f_lit_rate - 0.4613
 
 /* drop is missing values in avg numbers */
+/*
 drop if mi(avg0203)
 drop if mi(avg0406)
 drop if mi(avg0709)
 drop if mi(avg1012)
+*/
 
 /* RD graphs */
 
@@ -70,7 +72,7 @@ ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2004-06")
 gr save $tmp/reduced2.gph, replace
 
 /* 2007-09 graph */
-rd ln_avg0709 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(20) start(-.1) end(.1) ///
+rd ln_avg0709 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2007-09")
 
@@ -84,8 +86,8 @@ ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2010-12")
 gr save $tmp/reduced4.gph, replace
 
 /* combine all graphs */
-gr combine reduced1.gph reduced2.gph reduced3.gph reduced4.gph, title(Reduced Form - Average Primary Enrollment for Girls)
-graphout reduced_g_enr
+gr combine $tmp/reduced1.gph $tmp/reduced2.gph $tmp/reduced3.gph $tmp/reduced4.gph, title(Reduced Form - Average Primary Enrollment for Girls)
+graphout reduced_g_enr4
 
 
 **** BOYS *****
@@ -106,7 +108,7 @@ gen avg0709b = (var2007b + var2008b + var2009b)/3 if year == 2012
 gen avg1012b = (var2010b + var2011b + var2012b)/3 if year == 2012
 
 /* gen log and replace missing values */
-foreach var in avg0204b avg0709b avg1012b {
+foreach var in avg0203b avg0406b avg0709b avg1012b {
  gen ln_`var' = ln(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n-1] if mi(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n+1] if mi(`var')
@@ -146,5 +148,5 @@ ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2010-12")
 gr save $tmp/reduced4b.gph, replace
 
 /* combine graphs */
-gr combine reduced1b.gph reduced2b.gph reduced3b.gph reduced4b.gph, title(Reduced Form)
-graphout reduced_b_enr
+gr combine $tmp/reduced1b.gph $tmp/reduced2b.gph $tmp/reduced3b.gph $tmp/reduced4b.gph, title("Reduced Form - Average Primary Enrolment for Boys")
+graphout reduced_b_enr2
