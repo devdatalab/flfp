@@ -10,7 +10,7 @@ global statelist2 karnataka punjab rajasthan
 
 /******************************************************************/
 /* Add Age-Specific Educational Attainment Data from SECC to PC01 */
-/******************************************************************/
+o/******************************************************************/
 
 foreach state in $statelist {
 
