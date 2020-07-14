@@ -31,11 +31,12 @@ foreach var in 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 {
  
 /* gen average enrollment variables */
 gen avg0203 = (var2002 + var2003)/2 if year == 2012
+gen avg0406 = (var2004 + var2005 + var2006)/3 if year == 2012
 gen avg0709 = (var2007 + var2008 + var2009)/3 if year == 2012
 gen avg1012 = (var2010 + var2011 + var2012)/3 if year == 2012
 
 /* gen log variables and replace missing values */
-foreach var in avg0203 avg0709 avg1012 {
+foreach var in avg0203 avg0406 avg0709 avg1012 {
  gen ln_`var' = ln(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n-1] if mi(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n+1] if mi(`var')
@@ -48,35 +49,43 @@ replace pc01_pca_f_lit_rate = pc01_pca_f_lit_rate - 0.4613
 
 /* drop is missing values in avg numbers */
 drop if mi(avg0203)
+drop if mi(avg0406)
 drop if mi(avg0709)
 drop if mi(avg1012)
 
 /* RD graphs */
 
 /* 2002-03 graph */
-rd ln_avg0203 pc01_pca_f_lit_rate if year==2012, degree(2) bins(50) start(-.05) end(.05) ///
+rd ln_avg0203 pc01_pca_f_lit_rate if year==2012, degree(2) bins(50) start(-.1) end(0.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2002-04")
+ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2002-03")
 
-gr save reduced1.gph, replace
+gr save $tmp/reduced1.gph, replace
+
+/* 2004-06 graph */
+rd ln_avg0406 pc01_pca_f_lit_rate if year==2012, degree(2) bins(50) start(-.1) end(.1) ///
+absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
+ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2004-06")
+
+gr save $tmp/reduced2.gph, replace
 
 /* 2007-09 graph */
-rd ln_avg0709 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(20) start(-.05) end(.05) ///
+rd ln_avg0709 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(20) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2004-07")
+ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2007-09")
 
-gr save reduced2.gph, replace
+gr save $tmp/reduced3.gph, replace
 
 /* 2010-12 graph */
 rd ln_avg1012 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2008-10")
+ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2010-12")
 
-gr save reduced3.gph, replace
+gr save $tmp/reduced4.gph, replace
 
 /* combine all graphs */
-gr combine reduced1.gph reduced2.gph reduced3.gph, title(Reduced Form - Average Primary Enrollment for Girls)
-graphout reducedg
+gr combine reduced1.gph reduced2.gph reduced3.gph reduced4.gph, title(Reduced Form - Average Primary Enrollment for Girls)
+graphout reduced_g_enr
 
 
 **** BOYS *****
@@ -91,7 +100,8 @@ foreach var in 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 {
  }
  
 /* gen average variables */
-gen avg0204b = (var2002b + var2003b + var2004b)/3 if year == 2012
+gen avg0203b = (var2002b + var2003b)/2 if year == 2012
+gen avg0406b = (var2004b + var2005b + var2006b)/3 if year == 2012
 gen avg0709b = (var2007b + var2008b + var2009b)/3 if year == 2012
 gen avg1012b = (var2010b + var2011b + var2012b)/3 if year == 2012
 
@@ -108,26 +118,33 @@ foreach var in avg0204b avg0709b avg1012b {
 /* RD graphs */
 
 /* 2002-03 */
-rd ln_avg0204b pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+rd ln_avg0203b pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2002-04")
+ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2002-03")
 
-gr save reduced1b.gph, replace
+gr save $tmp/reduced1b.gph, replace
+
+/* 2004-06 graph */
+rd ln_avg0406 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
+ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2004-06")
+
+gr save $tmp/reduced2b.gph, replace
 
 /* 2007-09 */
 rd ln_avg0709b pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2004-07")
+ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2007-09")
 
-gr save reduced2b.gph, replace
+gr save $tmp/reduced3b.gph, replace
 
 /* 2010-12 */
 rd ln_avg1012b pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2008-10")
+ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2010-12")
 
-gr save reduced3b.gph, replace
+gr save $tmp/reduced4b.gph, replace
 
 /* combine graphs */
-gr combine reduced1b.gph reduced2b.gph reduced3b.gph, title(Reduced Form)
-graphout reducedb
+gr combine reduced1b.gph reduced2b.gph reduced3b.gph reduced4b.gph, title(Reduced Form)
+graphout reduced_b_enr
