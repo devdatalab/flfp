@@ -17,9 +17,6 @@ ren district_code pc01_district_id
 ren district_name pc01_district_name
 ren cd_block_name pc01_block_name
 
-/* drop unnamed forest villages (no match in PC01) */
-drop if pc01_block_name == "forest villages"
-
 /* generate unique identifiers for observations (necessary for masala merge) */
 tostring pc01_state_id pc01_district_id, replace
 gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name
@@ -88,6 +85,19 @@ replace pc01_block_name = "iiii" if pc01_block_name == "tandur" ///
     & pc01_district_id == "1"
 replace pc01_block_name = "tamar-1" if pc01_block_name == "tamari"
 
+/* fix EBBs which have no name in PC01 ("forest villages" in ebbs_list) */
+global uplist kheri jhansi bahraich gonda mahrajganj sonbhadra
+
+foreach district in $uplist {
+  replace pc01_block_name = "forest villages" if mi(pc01_block_name) & ///
+      pc01_state_name == "uttar pradesh" & pc01_district_name == "`district'"
+}
+
+replace pc01_block_name = "forest villages" if mi(pc01_block_name) & ///
+    pc01_state_name == "uttarakhand" & pc01_district_name == "udham singh nagar"
+replace pc01_block_name = "forest villages" if mi(pc01_block_name) & ///
+    pc01_state_name == "uttarakhand" & pc01_district_name == "champawat"
+
 /* generate unique identifiers (necessary for masala merge) */
 gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name
 
@@ -152,14 +162,14 @@ ren cd_block_code ebb_block_id
 label variable ebb_lit_gender_gap "Block gap in literacy rates by gender (EBB)"
 
 /* generate treatment variable (treated != EBB, sometimes) */
-gen treated = 0
+gen treated_dummy = 0
 
 /* all EBBs should be treated */
-replace treated = 1 if ebb_dummy == 1
+replace treated_dummy = 1 if ebb_dummy == 1
 
 /* "expanded to include blocks with rural female literacy rates of less than 45%,
 irrespective of the gender gap */
-replace treated = 1 if pc01_pca_f_lit_rate < 0.45
+replace treated_dummy = 1 if pc01_pca_f_lit_rate < 0.45
 
 /* save merged dataset */
 save $ebb/ebbs_list_clean, replace
