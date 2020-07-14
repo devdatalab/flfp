@@ -54,7 +54,7 @@ replace pc01_pca_f_lit_rate = pc01_pca_f_lit_rate - 0.4613
 /* generate RD graphs */
 
 /* girls */
-rd diff_total_percent pc01_pca_f_lit_rate if year == 2003, degree(2) bins(50) start(-.1) end(.1) ///
+rd diff_total pc01_pca_f_lit_rate if year == 2003, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
     ytitle ("Change in Enrollment 2003 - 2008") ///
     title ("Girls- Change in Enrollment between 2003 and 2008")
@@ -62,7 +62,7 @@ absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy 
 graphout girls123
 
 /* boys */
-rd diffb_total_percent pc01_pca_f_lit_rate if year == 2003, degree(2) bins(50) start(-.1) end(.1) ///
+rd diffb_total pc01_pca_f_lit_rate if year == 2003, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("Change in Enrollment 2003 - 2008") ///
       title ("Boys - Change in Enrollment between 2003 and 2008")
