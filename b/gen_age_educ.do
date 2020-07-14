@@ -3,7 +3,7 @@
 /***********/
 
 /* global of most state names */
-global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry sikkim tamilnadu telangana tripura uttarakhand uttarpradesh westbengal
+global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry sikkim tamilnadu tripura uttarakhand uttarpradesh westbengal
 
 /* these states don't have PC01 IDs in the SECC datasets */
 global statelist2 karnataka punjab rajasthan
@@ -100,6 +100,10 @@ foreach state in $statelist {
 
 }
 
+/**********************************/
+/* Append Temporary SECC Datasets */
+/**********************************/
+
 clear
 
 /* declare temporary variable name */
@@ -116,6 +120,10 @@ foreach state in $statelist {
 
 /* drop villages with low populations */
 drop if pc01_pca_tot_p < 100
+
+/*********************************/
+/* Standardize Formatting & Save */
+/*********************************/
 
 /* collapse to block level */
 collapse (mean) m_educ_years* m_lit* m_primary* m_middle* ///
