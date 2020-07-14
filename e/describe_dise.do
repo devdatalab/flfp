@@ -33,11 +33,11 @@ foreach var in 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 {
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace var`var' = var`var'[_n+1] if mi(var`var')
  }
  
-gen avg0204 = (var2002 + var2003 + var2004)/3 if year == 2012
+gen avg0203 = (var2002 + var2003)/2 if year == 2012
 gen avg0709 = (var2007 + var2008 + var2009)/3 if year == 2012
 gen avg1012 = (var2010 + var2011 + var2012)/3 if year == 2012
 
-foreach var in avg0204 avg0709 avg1012 {
+foreach var in avg0203 avg0709 avg1012 {
  gen ln_`var' = ln(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n-1] if mi(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n+1] if mi(`var')
@@ -48,19 +48,44 @@ foreach var in avg0204 avg0709 avg1012 {
 replace pc01_pca_f_lit_rate = pc01_pca_f_lit_rate - 0.4613
 
 
-/* RD graphs */
+/* state mean adjustment */
+/* state mean */
+sort pc01_state_id pc01_district_id pc01_block_id year
+by pc01_state_id, sort: egen count_s1 = count(pc01_block_id) if year == 2012
+by pc01_state_id, sort: egen state_0204 = total(avg0203) if year == 2012
+by pc01_state_id, sort: gen state_avg0204 = state_0204/count_s1 if year == 2012
+
+
+/* gen block-state var */
+
+gen avg0204_s = avg0203 - state_avg0204
+
+gen ln_avg0204_s = ln(avg0204_s)
 
 /* RD graphs */
 
-rd ln_avg0204 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+/* RD graphs */
+
+drop if mi(avg0203)
+ 
+rd ln_avg0203 pc01_pca_f_lit_rate if year==2012, degree(2) bins(50) start(-.05) end(.05) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2002-04")
+graphout 1b
 
+save $tmp/reduced.dta, replace
+
+
+/*
 gr save reduced1.gph, replace
 
-rd ln_avg0709 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+
+/*
+
+rd ln_avg0709 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(20) start(-.05) end(.05) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2004-07")
+graphout 2b
 
 gr save reduced2.gph, replace
 
