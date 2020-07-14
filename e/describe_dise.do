@@ -34,10 +34,10 @@ foreach var in 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 {
  }
  
 gen avg0204 = (var2002 + var2003 + var2004)/3 if year == 2012
-gen avg0407 = (var2004 + var2005 + var2006 + var2007)/4 if year == 2012
-gen avg0810 = (var2008 + var2009 + var2010)/3 if year == 2012
+gen avg0709 = (var2007 + var2008 + var2009)/3 if year == 2012
+gen avg1012 = (var2010 + var2011 + var2012)/3 if year == 2012
 
-foreach var in avg0204 avg0407 avg0810 {
+foreach var in avg0204 avg0709 avg1012 {
  gen ln_`var' = ln(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n-1] if mi(`var')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n+1] if mi(`var')
@@ -56,20 +56,71 @@ rd ln_avg0204 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1)
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2002-04")
 
-graphout reduced1
+gr save reduced1.gph, replace
 
-rd ln_avg0407 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+rd ln_avg0709 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2004-07")
 
-graphout reduced2
+gr save reduced2.gph, replace
 
-rd ln_avg0810 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+
+rd ln_avg1012 pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2008-10")
 
-graphout reduced3
+gr save reduced3.gph, replace
+
+gr combine reduced1.gph reduced2.gph reduced3.gph, title(Reduced Form)
+graphout reduced
+
+
+**** BOYS *****
+
+sort pc01_state_id pc01_district_id pc01_block_id year
+
+foreach var in 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 {
+ gen var`var'b = enr_all_b if year == `var'
+ by pc01_state_id pc01_district_id pc01_block_id, sort: replace var`var'b = var`var'b[_n-1] if mi(var`var'b)
+ by pc01_state_id pc01_district_id pc01_block_id, sort: replace var`var'b = var`var'b[_n+1] if mi(var`var'b)
+ }
+ 
+gen avg0204b = (var2002b + var2003b + var2004b)/3 if year == 2012
+gen avg0709b = (var2007b + var2008b + var2009b)/3 if year == 2012
+gen avg1012b = (var2010b + var2011b + var2012b)/3 if year == 2012
+
+foreach var in avg0204b avg0709b avg1012b {
+ gen ln_`var' = ln(`var')
+ by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n-1] if mi(`var')
+ by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var' = `var'[_n+1] if mi(`var')
+ by pc01_state_id pc01_district_id pc01_block_id, sort: replace ln_`var' = ln_`var'[_n-1] if mi(ln_`var')
+ by pc01_state_id pc01_district_id pc01_block_id, sort: replace ln_`var' = ln_`var'[_n+1] if mi(ln_`var')
+ }
+
+
+/* RD graphs */
+
+rd ln_avg0204b pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
+ytitle ("Log Average Enrollment 2002-04") title ("Reduced Form - 2002-04")
+
+gr save reduced1b.gph, replace
+
+rd ln_avg0709b pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
+ytitle ("Log Average Enrollment 2004-07") title ("Reduced Form - 2004-07")
+
+gr save reduced2b.gph, replace
+
+
+rd ln_avg1012b pc01_pca_f_lit_rate if year == 2012, degree(2) bins(50) start(-.1) end(.1) ///
+absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
+ytitle ("Log Average Enrollment 2008-10") title ("Reduced Form - 2008-10")
+
+gr save reduced3b.gph, replace
+
+gr combine reduced1b.gph reduced2b.gph reduced3b.gph, title(Reduced Form)
+graphout reducedb
 
 // pc01_pca_f_lit_rate < .4613
 // by pc01_state_id pc01_district_id pc01_block_id, sort: replace var = var[_n-1] if mi(var)
- 
