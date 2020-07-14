@@ -44,7 +44,8 @@ ren dise_state pc01_state_name
 foreach var in blackboard num_classrooms toilet_boys elec library ///
      toilet_common toilet_girls wall playground water {
   rename `var' facility_`var'
-  
+}
+
 /* fix roman numerals  */
 replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
 
