@@ -2,21 +2,11 @@
 /* Globals */
 /***********/
 
-global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadranagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand karnataka madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry punjab rajasthan sikkim tamilnadu telangana tripura uttarakhand uttarpradesh westbengal
+/* global of most state names */
+global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry sikkim tamilnadu telangana tripura uttarakhand uttarpradesh westbengal
 
-/***************************/
-/* Prepare Master  Dataset */
-/***************************/
-
-/* generate temporary dataset */
-use $pc01/pc01r_pca_clean, clear
-
-/* generate unmatched observations variable, to test later SECC and PC01 merge efficacy */
-gen match_rate = .
-label variable match_rate "% of villages matched between PC01 and SECC, by state"
-
-/* save temporary dataset, for later merges */
-save $tmp/pc01_secc_merge, replace
+/* these states don't have PC01 IDs in the SECC datasets */
+global statelist2 karnataka punjab rajasthan
 
 /******************************************************************/
 /* Add Age-Specific Educational Attainment Data from SECC to PC01 */
@@ -42,8 +32,8 @@ foreach state in $statelist {
   /* drop if sex is not male or female */
   drop if sex != 1 & sex != 2
 
-  /* drop if missing age or if age is  high */
-  drop if age == -9999 | age > 80
+  /* drop if outside age boundaries */
+  drop if age < 0 | age > 80
 
   /*******************************************/
   /* Define Educational Attainment Variables */
@@ -51,6 +41,7 @@ foreach state in $statelist {
   
   /* recode educational attainment to total years in school */
   recode ed (1 = 0) (2 = 2) (3 = 5) (4 = 8) (5 = 10) (6 = 12) (7 = 14), gen(educ_years)
+  drop if mi(educ_years)
 
   /* generate all dummy variables */
   foreach edu in lit primary middle {
@@ -85,26 +76,63 @@ foreach state in $statelist {
   /* Merge with Master PC01 Dataset */
   /**********************************/
   
-  /* reshape age as wide (unique on just household ID now) */
+  /* reshape age as wide (unique on just village ID now) */
   reshape wide m_educ_years m_lit m_primary m_middle ///
       f_educ_years f_lit f_primary f_middle, ///
       i(pc01_state_id pc01_village_id) j(age)
 
   /* merge with PC01 data */
-  merge 1:1 pc01_state_id pc01_village_id using $tmp/pc01_secc_merge
+  merge 1:1 pc01_state_id pc01_village_id using $pc01/pc01r_pca_clean
 
-  /* generate match rate */
+  /* generate %  match rate */
   egen unmatched = total(_merge == 1)
   egen matched = total(_merge == 3)
-  replace match_rate = matched / (unmatched + matched)
+  gen match_rate = matched / (unmatched + matched)
 
   /* drop unmatched observations */
-  drop if _merge == 1
+  keep if _merge == 3
 
-  /* drop extraneous variables to facilitate next state merge */
+  /* drop extraneous variables */
   drop _merge matched unmatched
 
   /* save merged dataset */
-  save $tmp/pc01_secc_merge, replace
+  save $tmp/`state'_pc01_secc_merge, replace
 
 }
+
+clear
+
+/* declare temporary variable name */
+tempvar temp
+set obs 0
+
+/* set temporary variable to missing */
+gen `temp' = .
+
+/* append PC01 and SECC merge temporary files to create master file */
+foreach state in $statelist {
+  append using $tmp/`state'_pc01_secc_merge
+}
+
+/* drop villages with low populations */
+drop if pc01_pca_tot_p < 100
+
+/* collapse to block level */
+collapse (mean) m_educ_years* m_lit* m_primary* m_middle* ///
+    f_educ_years* f_lit* f_primary* f_middle* (first) match_rate, ///
+    by(pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
+    pc01_block_id pc01_block_name)
+
+/* destring IDs */
+destring pc01_state_id pc01_district_id pc01_block_id, replace
+
+/* make all string variables lowercase */
+foreach var of varlist _all {
+	local vartype: type `var'
+	if substr("`vartype'", 1,3) == "str" {
+		replace `var'= ustrlower(`var')
+	}
+}
+
+/* save final dataset */
+save $ebb/secc_block_ed_age_clean.dta, replace

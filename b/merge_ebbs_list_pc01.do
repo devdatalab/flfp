@@ -51,7 +51,7 @@ drop if pc01_pca_tot_p < 100
 
 /* collapse to block level */
 collapse (sum) pc01_pca_f_lit pc01_pca_tot_f pc01_pca_f_06 ///
-    pc01_pca_m_lit pc01_pca_tot_m pc01_pca_m_06, ///
+    pc01_pca_m_lit pc01_pca_tot_m pc01_pca_m_06 pc01_pca_tot_p, ///
     by(pc01_state_name pc01_state_id pc01_district_name pc01_district_id ///
     pc01_block_name pc01_block_id)
 
