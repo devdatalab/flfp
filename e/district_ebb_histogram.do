@@ -26,3 +26,26 @@ histogram ebb_share, frequency ///
 
 /* export graph */
 graphout ebb_district_hist
+
+/***************************************************/
+/* Generate Histogram of Blocks by Female Literacy */
+/***************************************************/
+
+/* import EBB and PC01 merged dataset */
+use $ebb/ebbs_list_clean, clear
+
+/* graph frequency of literacy rate in the blocks */
+histogram pc01_pca_f_lit_rate if kgbv_treatment_dummy == 1 & ///
+    pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413, ///
+    freq bin(16) gap(20) ///
+    title(Female Literacy Rate Prevalence by Block) ///
+    ytitle("Number of Blocks in Bin") ///
+    xtitle("Female Rural Literacy Rate") ///
+    xlabel(0.3813(0.02)0.5413) ///
+    xtick(0.3813(0.01)0.5413) ///
+    xline(.4613, lcolor(black) lwidth(medthick)) ///
+    fcolor(maroon) lcolor(black) ///
+    name(female_lit_hist, replace)
+
+/* export graph */
+graphout female_lit_hist
