@@ -2,20 +2,24 @@
 /* Globals */
 /***********/
 
-/* global of most state names */
-global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry sikkim tamilnadu tripura uttarakhand uttarpradesh westbengal
+/* global of state names */
+global statelist andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand karnataka kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry punjab rajasthan sikkim tamilnadu tripura uttarakhand uttarpradesh westbengal
+
+/* states with PC01 IDs in household dataset */
+global statelist1 andamanandnicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadraandnagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand kerala lakshadweep madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry sikkim tamilnadu tripura uttarakhand uttarpradesh westbengal
 
 /* these states don't have PC01 IDs in the SECC datasets */
 global statelist2 karnataka punjab rajasthan
 
-/******************************************************************/
-/* Add Age-Specific Educational Attainment Data from SECC to PC01 */
-o/******************************************************************/
+/*********************************/
+/* Add PC01 Codes to SECC States */
+/*********************************/
 
-foreach state in $statelist {
+/* add codes using household data for statelist 1 */
+foreach state in $statelist1 {
 
   /* open household dataset */
-  use $secc/final/dta/`state'_household_clean, clear
+  use $secc/final/dta/`state'_members_clean, clear
 
   /* drop duplicates so it's unique on household ID */
   drop if flag_duplicates == 1
@@ -23,6 +27,35 @@ foreach state in $statelist {
   /* merge with members dataset (household data was necessary for PC01 IDs) */
   merge 1:m  mord_hh_id using $secc/final/dta/`state'_members_clean
 
+  /* save as temporary dataset */
+  save $tmp/`state'_members_clean
+
+}  
+
+/* add codes using PC01 ID key for remaining states */
+foreach state in $statelist2 {
+
+  /* open members dataset */
+  use $secc/final/dta/`state'_members_clean, clear
+
+  /* add PC01 codes to datasets */
+  merge m:1 pc11_state_id pc11_village_id using $keys/pcec/pc01r_pc11r_key
+
+  /* save as temporary dataset */
+  save $tmp/`state'_members_clean
+
+}
+
+/******************************************************************/
+/* Add Age-Specific Educational Attainment Data from SECC to PC01 */
+/******************************************************************/
+
+foreach state in $statelist {
+
+  /*********************/
+  /* Drop Missing Data */
+  /*********************/
+  
   /* drop if missing village ID */
   drop if mi(pc01_village_id)
 
