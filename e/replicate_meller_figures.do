@@ -12,17 +12,25 @@ use $ebb/ebbs_list_clean, clear
 /* graph a scatterplot with black dots representing EBBs
 (based on ebbs_list.dta coding, rather than the raw qualification metrics) */
 twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if ebb_dummy == 1, mcolor(black) msize(tiny)) ///
+    if ebb_dummy == 0 & pc01_pca_lit_gender_gap >= 0 ///
+    & pc01_pca_f_lit_rate <= 0.8, msymbol(Oh) mlwidth(vvthin) msize(vsmall) mlcolor(black)) ///
     (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if ebb_dummy == 0, mcolor(gs8) msize(tiny)), ///
+    if ebb_dummy == 1, msymbol(O) mcolor(black) msize(vsmall)) ///
+    (scatteri .5 .3813 .2159 .3813, recast(line) lcolor(black) lpattern(shortdash)) ///
+    (scatteri .5 .5413 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
+    (scatteri .2159 .3813 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
+    (scatteri .5 .3813 .5 .5413, recast(line) lcolor(black) lpattern(shortdash)), ///
     graphregion(color(white)) ///
+    xsize(8) ysize(4.5) ///
     xtitle("Female Rural Literacy Rate") ///
     ytitle("Gender Gap in Rural Literacy") ///
     ylabel(, angle(0) format(%9.2f) nogrid) ///
     legend(off) ///
     xline(.4613, lcolor(black)) ///
     yline(.2159, lcolor(black)) ///
-    ylabel(-0.2 0 0.2 0.4 0.6) ///
+    ylabel(0(0.1)0.5) ///
+    xlabel(0(0.2)0.8) ///
+    ysc(reverse) ///
     title(NPEGEL/KGBV Eligibility of Rural Blocks) ///
     name(lit_rate_rd_scatter, replace)
 
