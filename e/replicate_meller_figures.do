@@ -32,25 +32,26 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     xlabel(0(0.2)0.8) ///
     ysc(reverse) ///
     title(NPEGEL/KGBV Eligibility of Rural Blocks) ///
-    name(lit_rate_rd_scatter, replace)
+    name(fig3, replace)
 
 /* export graph */
-graphout lit_rate_rd_scatter
+graphout fig3
 
-/***********/
-/* Fig. 4a */
-/***********/
+/**********/
+/* Fig. 4 */
+/**********/
 
 /* open dataset */
 use $ebb/ebbs_list_clean, clear
 
 /* binscatter for literacy rate RD */
 binscatter kgbv_treatment_dummy pc01_pca_f_lit_rate ///
-    if pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413, ///
+    if pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413 ///
+    & pc01_pca_lit_gender_gap > 0.2159, ///
     rd(0.4613) ///
-    title(Program Participation) ///
+    title(Program Participation, size(medlarge)) ///
     xtitle("Female Rural Literacy Rate") ///
-    ytitle("Fraction of KGBV Blocks in Bin") ///
+    ytitle("Fraction of NPEGEL/KGBV Blocks in Bin") ///
     xlabel(0.3813(0.02)0.5413) ///
     xtick(0.3813(0.01)0.5413) ///
     ylabel(0(0.2)1) ///
@@ -58,33 +59,28 @@ binscatter kgbv_treatment_dummy pc01_pca_f_lit_rate ///
     xline(.4613, lcolor(black) lwidth(medthick)) ///
     mcolor(maroon) msymbol(circle) ///
     lcolor(black) ///
-    name(lit_rate_rd_bin, replace)
-
-/* export combined graph */
-graphout lit_rate_rd_bin
-
-/***********/
-/* Fig. 4b */
-/***********/
-
-/* import EBB and PC01 merged dataset */
-use $ebb/ebbs_list_clean, clear
+    name(fig4a, replace)
 
 /* graph frequency of literacy rate in the blocks */
-histogram pc01_pca_f_lit_rate if kgbv_treatment_dummy == 1 & ///
-    pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413, ///
+histogram pc01_pca_f_lit_rate ///
+    if pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413 ///
+    & pc01_pca_lit_gender_gap > 0.2159, ///, ///
     freq bin(16) gap(20) ///
-    title(Female Literacy Rate Prevalence by Block) ///
+    title(Histogram, size(medlarge)) ///
     ytitle("Number of Blocks in Bin") ///
     xtitle("Female Rural Literacy Rate") ///
     xlabel(0.3813(0.02)0.5413) ///
     xtick(0.3813(0.01)0.5413) ///
     xline(.4613, lcolor(black) lwidth(medthick)) ///
     fcolor(maroon) lcolor(black) ///
-    name(lit_rate_rd_hist, replace)
+    name(fig4b, replace)
 
-/* export graph */
-graphout lit_rate_rd_hist
+/* combine graphs */
+graph combine fig4a fig4b, col(1) imargin(medium) ///
+    xsize(6) ysize(7.5) name(fig4, replace)
+
+/* export figure */
+graphout fig4
 
 /**********/
 /* Fig. 6 */
@@ -94,19 +90,17 @@ graphout lit_rate_rd_hist
 use $iec/flfp/dise_ebb_analysis_2, clear
 
 /* gen RD graph for girls */
-rd diff_total_g pc01_pca_f_lit_rate if year == 2003, degree(2) bins(50) start(-.1) end(.1) ///
-absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-    ytitle ("Change in Enrollment 2003 - 2008") ///
-    title ("Girls- Change in Enrollment between 2003 and 2008")
-
-/* export graph */
-graphout girls0308
+rd diff_total_g pc01_pca_f_lit_rate if year == 2003, ///
+    degree(2) bins(50) start(-.1) end(.1) ///
+    absorb(pc01_state_id) control(ln_pc01_pca_tot_p) ///
+    xtitle("Female Rural Literacy Rate") ///
+    ytitle("Change in Enrollment 2003 - 2008") ///
+    title("Girls- Change in Enrollment between 2003 and 2008")
 
 /* gen RD graph for boys */
-rd diff_total_b pc01_pca_f_lit_rate if year == 2003, degree(2) bins(50) start(-.1) end(.1) ///
-absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
-ytitle ("Change in Enrollment 2003 - 2008") ///
-      title ("Boys - Change in Enrollment between 2003 and 2008")
-
-/* export graph */
-graphout boys0308
+rd diff_total_b pc01_pca_f_lit_rate if year == 2003, ///
+    degree(2) bins(50) start(-.1) end(.1) ///
+    absorb(pc01_state_id) control(ln_pc01_pca_tot_p) ///
+    xtitle("Female Rural Literacy Rate") ///
+    ytitle("Change in Enrollment 2003 - 2008") ///
+    title("Boys - Change in Enrollment between 2003 and 2008")
