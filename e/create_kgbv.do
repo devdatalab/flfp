@@ -21,5 +21,17 @@ replace sc = "." if sc == "S"
 /* destring vars */
 destring kgbvs_operational sc, replace
 
+/* drop misc rows */
+drop if pc01_block_name == "total"
+
+/* replace state names */
+replace pc01_state_name = "dadar nagar haveli" if pc01_state_name == "dadar & nagar haveli"
+replace pc01_state_name = "jammu kashmir" if pc01_state_name == "j&k"
+
+/* drop duplicates */
+sort pc01_state_name pc01_district_name pc01_block_name
+quietly by pc01_state_name pc01_district_name pc01_block_name: gen dup = cond(_N==1,0,_n)
+drop if dup > 1
+
 /* save dataset */
 save $iec/ebb/kgbvs, replace
