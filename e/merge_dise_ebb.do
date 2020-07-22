@@ -50,7 +50,7 @@ foreach var in blackboard num_classrooms toilet_boys elec library ///
 replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
 
 /* collapse at state-disttrict-block level */
-collapse (sum) facility* enr*, by(year pc01_state_name pc01_district_name pc01_block_name)
+collapse (sum) pass* m60* facility* enr*, by(year pc01_state_name pc01_district_name pc01_block_name)
 
 /* remove  leading and trailing spaces */
 replace pc01_block_name=strtrim(pc01_block_name)

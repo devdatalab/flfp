@@ -36,7 +36,7 @@ use $tmp/dise_0, clear
 destring blackboard num_classrooms toilet_boys elec library toilet_common toilet_girls wall playground water, replace
 
 /* collapse enr and facility varaibles at vilcd level */
-collapse (sum) enr_all_g* enr_all_b*  blackboard num_classrooms toilet_boys elec library ///
+collapse (sum) enr_all_g* enr_all_b* pass* m60*  blackboard num_classrooms toilet_boys elec library ///
     toilet_common toilet_girls wall playground water, by(year dise_state district dise_block vilcd)
 
 /* save collapse dataset */
@@ -75,7 +75,7 @@ use /scratch/pn/dise/education.dta, clear
 rename vilid vilcd
 
 /* keep enr, facility, id variables */
-keep enr_sc* year vilcd schcd lib  blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play
+keep enr_sc* pass* m60* year vilcd schcd lib  blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play
 
 /* keep data from 2001-04 */
 keep if inlist(year, 1, 2, 3, 4)
@@ -95,7 +95,7 @@ quietly by year vilcd schcd: gen dup = cond(_N==1,0,_n)
 drop if dup > 1
 
 /* collapse at vilcd level */
-collapse (sum) enr* lib blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play, by(year vilcd)
+collapse (sum) enr* pass* m60* lib blackboard clrooms toilet_g toilet_c toiletb elec bndrywall water play, by(year vilcd)
 
 /* save cleaned dise data */
 save $tmp/dise_old.dta, replace
@@ -134,8 +134,16 @@ foreach var in b1 b2 b3 b4 b5 b6 b7 b8 g1 g2 g3 g4 g5 g6 g7 g8 {
   replace enr_all_`var' = enr_sc`var' if mi(enr_all_`var')
 }
 
+/* replace pass and m60 vars from old dise */
+foreach var in pass m60 {
+  replace `var'_5g = `var'_g5 if mi(`var'_5g)
+  replace `var'_5b = `var'_b5 if mi(`var'_5b)
+  replace `var'_7g = `var'_g7 if mi(`var'_7g)
+  replace `var'_7b = `var'_b7 if mi(`var'_7b)
+}
+
 /* drop old enr vars */
-drop enr_sc*
+drop enr_sc* pass_b* pass_g* m60_g* m60_b*
 
 /* replace facility vars from old dise */
 replace num_classrooms = clrooms if mi(num_classrooms)
@@ -156,6 +164,9 @@ drop _merge
 foreach var in b9 b10 b11 b12 g9 g10 g11 g12 g b {
   drop enr_all_`var'
 }
+
+/* drop extra vars */
+drop pass5 pass7 m605 m607
 
 /* save old-new dise data */
 save $tmp/dise_old_new, replace
