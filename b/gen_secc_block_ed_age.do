@@ -19,7 +19,7 @@ global statelist2 karnataka punjab rajasthan
 foreach state in $statelist1 {
 
   /* open household dataset */
-  use $secc/final/dta/`state'_members_clean, clear
+  use $secc/final/dta/`state'_household_clean, clear
 
   /* drop duplicates so it's unique on household ID */
   drop if flag_duplicates == 1
@@ -28,7 +28,7 @@ foreach state in $statelist1 {
   merge 1:m  mord_hh_id using $secc/final/dta/`state'_members_clean
 
   /* save as temporary dataset */
-  save $tmp/`state'_members_clean
+  save $tmp/`state'_members_clean, replace
 
 }  
 
@@ -42,7 +42,7 @@ foreach state in $statelist2 {
   merge m:1 pc11_state_id pc11_village_id using $keys/pcec/pc01r_pc11r_key
 
   /* save as temporary dataset */
-  save $tmp/`state'_members_clean
+  save $tmp/`state'_members_clean, replace
 
 }
 
@@ -55,6 +55,9 @@ foreach state in $statelist {
   /*********************/
   /* Drop Missing Data */
   /*********************/
+
+  /* open dataset */
+  use $tmp/`state'_members_clean, clear
   
   /* drop if missing village ID */
   drop if mi(pc01_village_id)
