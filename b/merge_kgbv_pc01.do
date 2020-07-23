@@ -158,5 +158,33 @@ use /scratch/plindsay/merge_results_101685, clear
 insert_manual_matches, manual_file($tmp/kgbv_manual3.csv) ///
     idmaster(id_master) idusing(id_using)
 
+/*********************/
+/* Clean New Dataset */
+/*********************/
+
+/* make master block names the key block name variable */
+ren pc01_block_name_master pc01_block_name
+
+/* replace missings block names with KGBV names */
+replace pc01_block_name = "pc01_block_name_using" if mi(pc01_block_name)
+
+/* drop extraneous variables */
+drop match_source pc01_block_name_using _merge masala_dist _new_match_flg ///
+    _pc01_block_name_master _pc01_block_name_using id_master id_using
+
+/* label KGBV variables */
+label var model "KGBV Type"
+label var sc "Scheduled Caste Enrollment in KGBVs"
+label var st "Scheduled Tribe Enrollment in KGBVs"
+label var obc "Other Backward Caste Enrollment in KGBVs"
+label var bpl "Below Poverty Line Enrollment in KGBVs"
+label var min "Minority Enrollment in KGBVs"
+label var total "Total Enrollment in KGBVs"
+
+/* replace missing data with zeroes */
+foreach var in kgbvs_approved kgbvs_operational model sc st obc bpl min total {
+  replace `var' = 0 if mi(`var')
+}
+
 /* save final dataset */
 save $ebb/kgbvs_list_clean, replace

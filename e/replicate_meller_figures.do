@@ -7,15 +7,16 @@
 /**********/
 
 /* open dataset */
-use $ebb/ebbs_list_clean, clear
+use $ebb/kgbvs_list_clean, clear
 
 /* graph a scatterplot with black dots representing EBBs
 (based on ebbs_list.dta coding, rather than the raw qualification metrics) */
 twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if ebb_dummy == 0 & pc01_pca_lit_gender_gap >= 0 ///
+    if kgbvs_operational == 0 & pc01_pca_lit_gender_gap >= 0 ///
     & pc01_pca_f_lit_rate <= 0.8, msymbol(Oh) mlwidth(vvthin) msize(vsmall) mlcolor(black)) ///
     (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if ebb_dummy == 1, msymbol(O) mcolor(black) msize(vsmall)) ///
+    if kgbvs_operational > 0 & pc01_pca_lit_gender_gap >= 0 ///
+    &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(black) msize(vsmall)) ///
     (scatteri .5 .3813 .2159 .3813, recast(line) lcolor(black) lpattern(shortdash)) ///
     (scatteri .5 .5413 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
     (scatteri .2159 .3813 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
@@ -31,7 +32,7 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     ylabel(0(0.1)0.5) ///
     xlabel(0(0.2)0.8) ///
     ysc(reverse) ///
-    title(NPEGEL/KGBV Eligibility of Rural Blocks) ///
+    title(KGBV Eligibility of Rural Blocks) ///
     name(fig3, replace)
 
 /* export graph */
@@ -42,16 +43,16 @@ graphout fig3
 /**********/
 
 /* open dataset */
-use $ebb/ebbs_list_clean, clear
+use $ebb/kgbvs_list_clean, clear
 
 /* binscatter for literacy rate RD */
-binscatter kgbv_treatment_dummy pc01_pca_f_lit_rate ///
+binscatter kgbvs_operational pc01_pca_f_lit_rate ///
     if pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413 ///
     & pc01_pca_lit_gender_gap > 0.2159, ///
     rd(0.4613) ///
     title(Program Participation, size(medlarge)) ///
     xtitle("Female Rural Literacy Rate") ///
-    ytitle("Fraction of NPEGEL/KGBV Blocks in Bin") ///
+    ytitle("KGBV Blocks in Bin") ///
     xlabel(0.3813(0.02)0.5413) ///
     xtick(0.3813(0.01)0.5413) ///
     ylabel(0(0.2)1) ///

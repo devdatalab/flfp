@@ -161,16 +161,5 @@ label variable ebb_f_lit_rate "Block female literacy rate (EBB)"
 ren cd_block_code ebb_block_id
 label variable ebb_lit_gender_gap "Block gap in literacy rates by gender (EBB)"
 
-/* generate treatment variable (treated != EBB, sometimes) */
-gen kgbv_treatment_dummy = 0
-label variable kgbv_treatment_dummy "Dummy for treatment in KGBV scheme"
-
-/* all EBBs should be treated */
-replace kgbv_treatment_dummy = 1 if ebb_dummy == 1
-
-/* "expanded to include blocks with rural female literacy rates of less than 45%,
-irrespective of the gender gap */
-replace kgbv_treatment_dummy = 1 if pc01_pca_f_lit_rate < 0.45
-
 /* save merged dataset */
 save $ebb/ebbs_list_clean, replace
