@@ -11,8 +11,8 @@ destring year, replace
 drop if year == 2001
 
 /* gen enrolment sum variables */
-gen enr_all_g = enr_all_g1 + enr_all_g2 + enr_all_g3 + enr_all_g4 + enr_all_g5 + enr_all_g6 + enr_all_g7 + enr_all_g8
-gen enr_all_b = enr_all_b1 + enr_all_b2 + enr_all_b3 + enr_all_b4 + enr_all_b5 + enr_all_b6 + enr_all_b7 + enr_all_b8
+// gen enr_all_g = enr_all_g1 + enr_all_g2 + enr_all_g3 + enr_all_g4 + enr_all_g5 + enr_all_g6 + enr_all_g7 + enr_all_g8
+// gen enr_all_b = enr_all_b1 + enr_all_b2 + enr_all_b3 + enr_all_b4 + enr_all_b5 + enr_all_b6 + enr_all_b7 + enr_all_b8
 gen enr_all_mid_g = enr_all_g6 + enr_all_g7 + enr_all_g8
 gen enr_all_mid_b = enr_all_b6 + enr_all_b7 + enr_all_b8
 
@@ -44,7 +44,7 @@ gen avg1012_`x' = (var2010`x' + var2011`x' + var2012`x')/3 if year == 2012
 /* gen log variables and replace missing values */
 
 foreach var in avg0203 avg0406 avg0709 avg1012 {
- gen ln_`var'_`x' = ln(`var'_`x')
+ gen ln_`var'_`x' = ln(`var'_`x' + 1)
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var'_`x' = `var'_`x'[_n-1] if mi(`var'_`x')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace `var'_`x' = `var'_`x'[_n+1] if mi(`var'_`x')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace ln_`var'_`x' = ln_`var'_`x'[_n-1] if mi(ln_`var'_`x')
