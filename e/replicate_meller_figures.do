@@ -98,6 +98,8 @@ rd diff_total_g pc01_pca_f_lit_rate if year == 2003, ///
     ytitle("Change in Enrollment 2003 - 2008") ///
     title("Girls- Change in Enrollment between 2003 and 2008")
 
+gr save $tmp/fig6a.gph, replace
+
 /* gen RD graph for boys */
 rd diff_total_b pc01_pca_f_lit_rate if year == 2003, ///
     degree(2) bins(50) start(-.1) end(.1) ///
@@ -105,3 +107,11 @@ rd diff_total_b pc01_pca_f_lit_rate if year == 2003, ///
     xtitle("Female Rural Literacy Rate") ///
     ytitle("Change in Enrollment 2003 - 2008") ///
     title("Boys - Change in Enrollment between 2003 and 2008")
+
+gr save $tmp/fig6b.gph, replace
+
+/* combine graphs */
+graph combine $tmp/fig6a.gph $tmp/fig6b.gph, col(1) imargin(medium) ///
+    name(fig6, replace)
+
+graphout fig6
