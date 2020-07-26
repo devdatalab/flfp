@@ -165,8 +165,8 @@ insert_manual_matches, manual_file($tmp/kgbv_manual3.csv) ///
 /* make master block names the key block name variable */
 ren pc01_block_name_master pc01_block_name
 
-/* replace missings block names with KGBV names */
-replace pc01_block_name = "pc01_block_name_using" if mi(pc01_block_name)
+/* drop if unmatched from KGBV data (cannot merge on block ID later) */
+drop if mi(pc01_block_id)
 
 /* drop extraneous variables */
 drop match_source pc01_block_name_using _merge masala_dist _new_match_flg ///
