@@ -6,15 +6,23 @@
 use $ebb/secc_block_ed_age_clean.dta, clear
 
 /* merge with EBBs list */
-merge 1:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/ebbs_list_clean
+merge 1:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_clean
 
 /* reshape to allow graphs with age as axis */
 reshape long m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
-    f_middle, i(pc01_state_id pc01_district_id pc01_block_id kgbv_treatment_dummy) j(age)
+    f_middle, i(pc01_state_id pc01_district_id pc01_block_id kgbvs_operational) j(age)
+
+/* generate KGBV dummy */
+gen kgbv_treatment_dummy = .
+replace kgbv_treatment_dummy = 0 if kgbvs_operational == 0
+replace kgbv_treatment_dummy = 1 if kgbvs_operational > 0
 
 /* collapse to age level, since the plots are national */
 collapse (mean) m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
     f_middle, by(age kgbv_treatment_dummy)
+
+/* save dataset */
+save $tmp/collapsed_secc_pc01, replace
 
 /****************/
 /* Graph by Sex */
@@ -78,3 +86,39 @@ grc1leg f_0_educ_levels f_1_educ_levels, ///
     name(female_treatment_educ_levels, replace)
 
 graphout female_treatment_educ_levels
+
+/*************************/
+/* RD with UP Attainment */
+/*************************/
+
+/* open dataset */
+use $tmp/collapsed_secc_pc01, clear
+
+/* loop through either sex and treatment dummy and generate RDs */
+foreach sex in m f {
+  foreach dummy in 1 0 {
+    binscatter `sex'_middle age ///
+        if kgbv_treatment == `dummy'  & age > 10 & age < 30, ///
+        rd(15) ///
+        title(`stext' Enrollment `dummy', size(medlarge)) ///
+        xtitle(Age) ///
+        ytitle(% Attended Upper Primary) ///
+        ylabel(0(0.2)0.8) ///
+        ytick(0(0.1)0.8) ///
+        xlabel(10(5)30) ///
+        xtick(10(1)30) ///
+        xline(15, lcolor(black) lwidth(medthick)) ///
+        mcolor(maroon) msymbol(circle) ///
+        lcolor(black) ///
+        name(secc_rd_`sex'_`dummy', replace)
+  }
+}
+
+/* combine four graphs */
+graph combine secc_rd_f_0 secc_rd_f_1 secc_rd_m_0 secc_rd_m_1, ///
+    xsize(8) ysize(10) ///
+    title("Upper Primary Enrollment and KGBV Treatment" "(SECC-2011)", size(medlarge)) ///
+    name(secc_rd, replace)
+
+/* export graph */
+graphout secc_rd
