@@ -2,6 +2,66 @@
 /* REPLICATE FIGURES FROM MELLER & LITSCHIG (2015) */
 /***************************************************/
 
+/************************/
+/* Program Installation */
+/************************/
+
+/* program to generate descritpive statistics tables */
+ssc install asdoc
+
+/***********/
+/* Table 4 */
+/***********/
+
+/* open dataset */
+use $ebb/kgbvs_list_clean, clear
+
+/* sample restricted to blocks that meet gender gap lit rate restriction */
+drop if pc01_pca_lit_gender_gap < .2159
+
+/* regressions with varying buffer size around female lit rate discontinuity */
+reg kgbvs_approved ebb_dummy ///
+    if pc01_pca_f_lit_rate > .4413 & pc01_pca_f_lit_rate < .4813
+estimates store reg1
+
+reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+    if pc01_pca_f_lit_rate > .4413 & pc01_pca_f_lit_rate < .4813
+estimates store reg2
+
+reg kgbvs_approved ebb_dummy ///
+    if pc01_pca_f_lit_rate > .4213 & pc01_pca_f_lit_rate < .5013
+estimates store reg3
+
+reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+    if pc01_pca_f_lit_rate > .4213 & pc01_pca_f_lit_rate < .5013
+estimates store reg4
+
+reg kgbvs_approved ebb_dummy ///
+    if pc01_pca_f_lit_rate > .4013 & pc01_pca_f_lit_rate < .5213
+estimates store reg5
+
+reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+    if pc01_pca_f_lit_rate > .4213 & pc01_pca_f_lit_rate < .5013
+estimates store reg6
+
+reg kgbvs_approved ebb_dummy ///
+    if pc01_pca_f_lit_rate > .3813 & pc01_pca_f_lit_rate < .5413
+estimates store reg7
+
+reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+    if pc01_pca_f_lit_rate > .3813 & pc01_pca_f_lit_rate < .5413
+estimates store reg8
+
+/* generate table with regression results */
+esttab reg1 reg2 reg3 reg4 reg5 reg6 reg7 reg8, ///
+    drop(_cons) ///
+    coeflabels(ebb_dummy "KGBV participation in 2007-08") ///
+    indicate("Pre-program controls = pc01_pca_lit_gender_gap") ///
+    mgroups("2% Range" "4% Range" "6% Range" "8% Range", pattern(1 0 1 0 1 0 1 0)) ///
+    nonumbers nomtitles ///
+    se star(* 0.10 ** 0.05 *** 0.01) ///
+    title(First Stage Estimates: Effect of EBB Status on Program Participation)
+
 /**********/
 /* Fig. 3 */
 /**********/
