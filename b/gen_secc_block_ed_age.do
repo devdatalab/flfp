@@ -27,6 +27,10 @@ foreach state in $statelist1 {
   /* merge with members dataset (household data was necessary for PC01 IDs) */
   merge 1:m  mord_hh_id using $secc/final/dta/`state'_members_clean
 
+  /* drop unmerged */
+  drop if _merge != 3
+  drop _merge
+
   /* save as temporary dataset */
   save $tmp/`state'_members_clean, replace
 
@@ -40,6 +44,10 @@ foreach state in $statelist2 {
 
   /* add PC01 codes to datasets */
   merge m:1 pc11_state_id pc11_village_id using $keys/pcec/pc01r_pc11r_key
+
+  /* drop unmerged */
+  drop if _merge != 3
+  drop merge
 
   /* save as temporary dataset */
   save $tmp/`state'_members_clean, replace
@@ -78,12 +86,12 @@ foreach state in $statelist {
   /* recode educational attainment to total years in school */
   recode ed (1 = 0) (2 = 2) (3 = 5) (4 = 8) (5 = 10) (6 = 12) (7 = 14), gen(educ_years)
   drop if mi(educ_years)
-
+  
   /* generate all dummy variables */
   foreach edu in lit primary middle {
-    gen `edu' = 0
+    gen `sex'_`educ' = .
   }
-  
+
   /* at least literate */
   replace lit = 1 if ed > 1
 
@@ -92,10 +100,6 @@ foreach state in $statelist {
 
   /* at least middle */
   replace middle = 1 if ed > 3
-
-  /* collapse educational attainment variables on village ID and age */
-  collapse (mean) educ_years lit primary middle, ///
-      by(pc01_state_id pc01_village_id age sex)
 
   /* generate sex-based educational attainment variables */
   foreach edu in educ_years lit primary middle {
@@ -163,7 +167,8 @@ drop if pc01_pca_tot_p < 100
 
 /* collapse to block level */
 collapse (mean) m_educ_years* m_lit* m_primary* m_middle* ///
-    f_educ_years* f_lit* f_primary* f_middle* (first) match_rate, ///
+    f_educ_years* f_lit* f_primary* f_middle* (first) match_rate ///
+    [w = pc01_pca_tot_p], ///
     by(pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_id pc01_block_name)
 
