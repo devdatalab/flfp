@@ -10,7 +10,8 @@ merge 1:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_cle
 
 /* reshape to allow graphs with age as axis */
 reshape long m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
-    f_middle, i(pc01_state_id pc01_district_id pc01_block_id kgbvs_operational) j(age)
+    f_middle, i(pc01_state_id pc01_district_id pc01_block_id kgbvs_operational ///
+    pc01_pca_tot_p) j(age)
 
 /* generate KGBV dummy */
 gen kgbv_treatment_dummy = .
@@ -19,7 +20,8 @@ replace kgbv_treatment_dummy = 1 if kgbvs_operational > 0
 
 /* collapse to age level, since the plots are national */
 collapse (mean) m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
-    f_middle, by(age kgbv_treatment_dummy)
+    f_middle (sum) pc01_pca_tot_p [weight = pc01_pca_tot_p], ///
+    by(age kgbv_treatment_dummy)
 
 /* save dataset */
 save $tmp/collapsed_secc_pc01, replace
@@ -87,9 +89,9 @@ grc1leg f_0_educ_levels f_1_educ_levels, ///
 
 graphout female_treatment_educ_levels
 
-/*************************/
-/* RD with UP Attainment */
-/*************************/
+/**************************************/
+/* RD with UP Attainment (Binscatter) */
+/**************************************/
 
 /* open dataset */
 use $tmp/collapsed_secc_pc01, clear
@@ -98,13 +100,15 @@ use $tmp/collapsed_secc_pc01, clear
 foreach sex in m f {
   foreach dummy in 1 0 {
     binscatter `sex'_middle age ///
-        if kgbv_treatment == `dummy'  & age > 10 & age < 30, ///
-        rd(15) ///
-        title(`stext' Enrollment `dummy', size(medlarge)) ///
+        if kgbv_treatment == `dummy'  & age > 10 & age < 30 ///
+        & `sex'_middle > 0.2, ///
+        absorb(pc01_state_id) controls(ln_pc01_pca_tot_p) ///
+        rd(15) linetype(none) ///
+        title(`sex' Enrollment `dummy', size(medlarge)) ///
         xtitle(Age) ///
         ytitle(% Attended Upper Primary) ///
-        ylabel(0(0.2)0.8) ///
-        ytick(0(0.1)0.8) ///
+        ylabel(0.2(0.2)0.8) ///
+        ytick(0.2(0.1)0.8) ///
         xlabel(10(5)30) ///
         xtick(10(1)30) ///
         xline(15, lcolor(black) lwidth(medthick)) ///
@@ -118,7 +122,29 @@ foreach sex in m f {
 graph combine secc_rd_f_0 secc_rd_f_1 secc_rd_m_0 secc_rd_m_1, ///
     xsize(8) ysize(10) ///
     title("Upper Primary Enrollment and KGBV Treatment" "(SECC-2011)", size(medlarge)) ///
+    note("Includes block-level population control and state-level fixed effects") ///
     name(secc_rd, replace)
 
 /* export graph */
 graphout secc_rd
+
+/***************/
+/* Regressions */
+/***************/
+
+gen diff_f_middle = .
+
+forvalues i in 15/16 {
+  replace diff_f_middle = ((f_middle if age == `i') - (f_middle if age == (`i' - 1)))
+}
+
+gen diff_middle = 
+
+by age, sort: gen diff_f_middle = f_middle - l1.f_middle
+
+foreach sex in m f {
+  gen change_`sex'_middle = `sex'_middle - l1.`sex'_middle
+}
+
+reghdfe f_middle kgbv_treatment_dummy#i.age c.m_middle#i.age ln_pc01_pca_tot_p ///
+    if age < 20 & age > 13, absorb(pc01_state_id)
