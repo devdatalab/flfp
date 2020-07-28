@@ -47,7 +47,7 @@ foreach state in $statelist2 {
 
   /* drop unmerged */
   drop if _merge != 3
-  drop merge
+  drop _merge
 
   /* save as temporary dataset */
   save $tmp/`state'_members_clean, replace
@@ -89,7 +89,7 @@ foreach state in $statelist {
   
   /* generate all dummy variables */
   foreach edu in lit primary middle {
-    gen `sex'_`educ' = .
+    gen `edu' = 0
   }
 
   /* at least literate */
@@ -171,17 +171,6 @@ collapse (mean) m_educ_years* m_lit* m_primary* m_middle* ///
     [w = pc01_pca_tot_p], ///
     by(pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_id pc01_block_name)
-
-/* destring IDs */
-destring pc01_state_id pc01_district_id pc01_block_id, replace
-
-/* make all string variables lowercase */
-foreach var of varlist _all {
-	local vartype: type `var'
-	if substr("`vartype'", 1,3) == "str" {
-		replace `var'= ustrlower(`var')
-	}
-}
 
 /* save final dataset */
 save $ebb/secc_block_ed_age_clean.dta, replace
