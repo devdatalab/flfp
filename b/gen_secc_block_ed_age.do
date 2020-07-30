@@ -79,37 +79,48 @@ foreach state in $statelist {
   /* drop if outside age boundaries */
   drop if age < 0 | age > 80
 
+  /* drop bad caste data */
+  drop if sc_st == -9999 | sc_st == -9998
+  
   /*******************************************/
   /* Define Educational Attainment Variables */
   /*******************************************/
   
   /* recode educational attainment to total years in school */
-  recode ed (1 = 0) (2 = 2) (3 = 5) (4 = 8) (5 = 10) (6 = 12) (7 = 14), gen(educ_years)
-  drop if mi(educ_years)
+  recode ed (1 = 0) (2 = 2) (3 = 5) (4 = 8) (5 = 10) (6 = 12) (7 = 14), gen(secc11_educ_years)
+  drop if mi(secc11_educ_years)
   
   /* generate all dummy variables */
-  foreach edu in lit primary middle {
+  foreach edu in secc11_lit secc11_primary secc11_middle {
     gen `edu' = 0
   }
 
   /* at least literate */
-  replace lit = 1 if ed > 1
+  replace secc11_lit = 1 if ed > 1
 
   /* at least primary */
-  replace primary = 1 if ed > 2
+  replace secc11_primary = 1 if ed > 2
 
   /* at least middle */
-  replace middle = 1 if ed > 3
+  replace secc11_middle = 1 if ed > 3
 
   /* generate sex-based educational attainment variables */
-  foreach edu in educ_years lit primary middle {
-    gen m_`edu' = `edu' if sex == 1
-    gen f_`edu' = `edu' if sex == 2
+  foreach edu of varlist secc11* {
+    gen `edu'_m = `edu' if sex == 1
+    gen `edu'_f = `edu' if sex == 2
   }
 
+  /* drop intermediate variables */
+  drop secc11_educ_years secc11_lit secc11_primary secc11_middle
+
+  /* generate ST/SC educational attainment variables */
+  foreach edu of varlist secc11* {
+    gen `edu'_sc = `edu' if sc_st == 1
+    gen `edu'_st = `edu' if sc_st == 2
+  }
+  
   /* collapse again, but now unique on household ID and age */
-  collapse (mean) m_educ_years m_lit m_primary m_middle ///
-      f_educ_years f_lit f_primary f_middle, ///
+  collapse (mean) secc11*, ///
       by(pc01_state_id pc01_village_id age)
 
   /**********************************/
@@ -117,8 +128,7 @@ foreach state in $statelist {
   /**********************************/
   
   /* reshape age as wide (unique on just village ID now) */
-  reshape wide m_educ_years m_lit m_primary m_middle ///
-      f_educ_years f_lit f_primary f_middle, ///
+  reshape wide secc11*, ///
       i(pc01_state_id pc01_village_id) j(age)
 
   /* merge with PC01 data */
@@ -166,11 +176,13 @@ drop if pc01_pca_tot_p < 100
 /*********************************/
 
 /* collapse to block level */
-collapse (mean) m_educ_years* m_lit* m_primary* m_middle* ///
-    f_educ_years* f_lit* f_primary* f_middle* (first) match_rate ///
+collapse (mean) secc11* (first) match_rate ///
     [w = pc01_pca_tot_p], ///
     by(pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_id pc01_block_name)
+
+/* destring */
+destring pc01_state_id pc01_district_id pc01_block_id, replace
 
 /* save final dataset */
 save $ebb/secc_block_ed_age_clean.dta, replace
