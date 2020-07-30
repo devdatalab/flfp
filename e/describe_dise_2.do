@@ -1,5 +1,5 @@
 /* use combined dise dataset */
-use /scratch/plindsay/dise_pc01_ebb_2.dta, clear
+use $iec/flfp/dise_pc01_ebb, clear
 
 /* gen numeric year var */
 gen year1 = substr(year, 1, 4)
