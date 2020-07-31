@@ -171,47 +171,74 @@ foreach state in $statelist {
 /* drop villages with low populations */
 drop if pc01_pca_tot_p < 100
 
-/* generate SC/ST population % */
-foreach caste in sc st {
-  foreach sex in m f {
-    gen pc01_pop_`sex'_`caste' = (pc01_pca_`sex'_`caste' / pc01_pca_tot_`sex')
+/*******************************************/
+/* Generate ST/SC Population Counts by Age */
+/*******************************************/
+
+/* female SC/ST population by age cohort (via population pyramid) */
+/* use population pyramid to get absolute estimates for SC/ST pop */
+foreach caste of varlist pc01_pca_f_sc pc01_pca_f_st {
+  forvalues age = 0/4 {
+    gen `caste'_`age' = `caste' * 0.0208
+  }
+  forvalues age = 5/9 {
+    gen `caste'_`age' = `caste' * 0.0214
+  }
+  forvalues age = 10/19 {
+    gen `caste'_`age' = `caste' * 0.0224
+  }
+  forvalues age = 20/24 {
+    gen `caste'_`age' = `caste' * 0.0219
+  }
+  forvalues age = 25/29 {
+    gen `caste'_`age' = `caste' * 0.0208
+  }
+  forvalues age = 30/34 {
+    gen `caste'_`age' = `caste' * 0.0203
+  }
+  forvalues age = 35/39 {
+    gen `caste'_`age' = `caste' * 0.0188
   }
 }
+
+/* male SC/ST population by age cohort (via population pyramid) */
+/* use population pyramid to get absolute estimates for SC/ST pop */
+foreach caste of varlist pc01_pop_m_sc pc01_pop_m_st {
+  forvalues age = 0/4 {
+    gen `caste'_`age' = `caste' * 0.0212
+  }
+  forvalues age = 5/9 {
+    gen `caste'_`age' = `caste' * 0.0216
+  }
+  forvalues age = 10/19 {
+    gen `caste'_`age' = `caste' * 0.0231
+  }
+  forvalues age = 20/24 {
+    gen `caste'_`age' = `caste' * 0.0226
+  }
+  forvalues age = 25/29 {
+    gen `caste'_`age' = `caste' * 0.0216
+  }
+  forvalues age = 30/34 {
+    gen `caste'_`age' = `caste' * 0.0207
+  }
+  forvalues age = 35/39 {
+    gen `caste'_`age' = `caste' * 0.0188
+  }
+}
+
+/* drop intermediate variables */
+drop pc01_pca_f_sc pc01_pca_f_st pc01_pca_m_sc pc01_pca_m_st
 
 /*********************************/
 /* Standardize Formatting & Save */
 /*********************************/
 
 /* collapse to block level */
-collapse (mean) secc11* pc01_pop* (first) match_rate ///
+collapse (mean) secc11* pc01_pca_f_s* pc01_pca_m_s* (first) match_rate ///
     [w = pc01_pca_tot_p], ///
     by(pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_id pc01_block_name)
-
-/* use population pyramid to get absolute estimates for SC/ST pop */
-foreach caste of varlist pc01_pop_f* {
-  forvalues age = 0/4 {
-    gen `caste'_`age' = `caste' * 0.0833
-  }
-  forvalues age = 5/9 {
-    gen `caste'_`age' = `caste' * 0.0854
-  }
-  forvalues age = 10/19 {
-    gen `caste'_`age' = `caste' * 0.0896
-  }
-  forvalues age = 20/24 {
-    gen `caste'_`age' = `caste' * 0.0875
-  }
-  forvalues age = 25/29 {
-    gen `caste'_`age' = `caste' * 0.0833
-  }
-  forvalues age = 30/34 {
-    gen `caste'_`age' = `caste' * 0.0813
-  }
-  forvalues age = 35/39 {
-    gen `caste'_`age' = `caste' * 0.075
-  }
-}
 
 /* destring */
 destring pc01_state_id pc01_district_id pc01_block_id, replace
