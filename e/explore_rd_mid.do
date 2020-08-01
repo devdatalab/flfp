@@ -1,22 +1,49 @@
-/* use dataset */
-
 use $iec/flfp/dise_ebb_analysis, clear
 
 /* create middle school enr and log enrollment */
-egen enr_up_b = rowtotal(enr_all_b6 enr_all_b7 enr_all_b8 )
-egen enr_up_g = rowtotal(enr_all_g6 enr_all_g7 enr_all_g8 )
-gen ln_enr_up_b = ln(enr_up_b + 1)
-gen ln_enr_up_g = ln(enr_up_g + 1)
+
+gen ln_enr_up_b = ln(enr_all_mid_b + 1)
+gen ln_enr_up_g = ln(enr_all_mid_g + 1)
 
 /* loop over all years */
-forval y = 2002/2008 {
-  rd ln_enr_up_g pc01_pca_f_lit_rate if year == `y' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), bw degree(1) ylabel(6(.5)9)
-  graphout ln_enr_g_`y'
-
-  rd ln_enr_up_b pc01_pca_f_lit_rate if year == `y' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), bw degree(1) ylabel(6(.5)9)
-  graphout ln_enr_b_`y'
+forval i = 2002/2015 {
+  rd ln_enr_up_g pc01_pca_f_lit_rate if year == `i' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), ///
+      bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle("Log Enrollment") ///
+      title(`i') bins(20)
+  // name(g`i') nodraw
+  graphout g1_`i'
 }
 
+
+
+  local graphs_g "`graphs_g' g`i'"
+}
+
+/* graph combine */
+gr combine `graphs_g', cols(2)  title (RD - Middle School Enrollment for Girls)
+graphout g_combine1
+
+
+
+
+
+
+
+
+/*
+  rd ln_enr_up_b pc01_pca_f_lit_rate if year == `y' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), bw degree(1) ylabel(6(.5)9)
+  local graphs_b "`graphs_b' b`i'"
+}
+
+/* combine graphs */
+
+gr combine `graphs_g', title (RD - Middle School Enrollment for Girls) xtitle("Female Literacy Rate") ytitle("Log Enrollment")
+graphout g_combine
+
+gr combine `graphs_b', title (RD - Middle School Enrollment for Boys) xtitle("Female Literacy Rate") ytitle("Log Enrollment")
+graphout b_combine
+
+/*
 /* create a treatment variable for the RD */
 gen treatment = pc01_pca_f_lit_rate < 0
 
@@ -28,12 +55,14 @@ group pc01_state_id
 group pc01_state_id pc01_district_id 
 
 /* GIRLS */
-forval y = 2002/2008 {
-  quireg ln_enr_up_g treatment pc01_pca_f_lit_rate lit_right if year == `y' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), absorb(sgroup) cluster(sdgroup) title(`y')
+forval y = 2002/2015 {
+  quireg ln_enr_up_g treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
+ & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`y')
 }
 
 /* BOYS */
-forval y = 2002/2008 {
-  quireg ln_enr_up_b treatment pc01_pca_f_lit_rate lit_right if year == `y', cluster(sdgroup) absorb(sgroup)
+forval y = 2002/2015 {
+  quireg ln_enr_up_b treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
+ & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`y')
 }
 

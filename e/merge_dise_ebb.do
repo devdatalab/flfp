@@ -78,7 +78,7 @@ keep if _merge == 3
 drop _merge
 
 /* merge EBB data */
-merge m:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/ebbs_list_clean
+merge m:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_clean
 
 /* drop unmatched obs */
 keep if _merge==3
