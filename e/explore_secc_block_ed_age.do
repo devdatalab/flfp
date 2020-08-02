@@ -10,7 +10,7 @@ merge 1:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_cle
 
 /* reshape to allow graphs with age as axis */
 reshape long m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
-    f_middle, i(pc01_state_id pc01_district_id pc01_block_id kgbvs_operational ///
+    f_middle, i(pc01_state_id pc01_district_id pc01_block_id kgbv_treatment_dummy ///
     pc01_pca_tot_p) j(age)
 
 /* generate KGBV dummy */
@@ -20,7 +20,7 @@ replace kgbv_treatment_dummy = 1 if kgbvs_operational > 0
 
 /* collapse to age level, since the plots are national */
 collapse (mean) m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
-    f_middle (sum) pc01_pca_tot_p [weight = pc01_pca_tot_p], ///
+    f_middle (sum) pc01_pca_tot_p [w = pc01_pca_tot_p], ///
     by(age kgbv_treatment_dummy)
 
 /* save dataset */
@@ -132,19 +132,27 @@ graphout secc_rd
 /* Regressions */
 /***************/
 
-gen diff_f_middle = .
+/* open dataset */
+use $ebb/secc_block_ed_age_clean.dta, clear
 
-forvalues i in 15/16 {
-  replace diff_f_middle = ((f_middle if age == `i') - (f_middle if age == (`i' - 1)))
-}
+/* merge with EBBs list */
+merge 1:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_clean
 
-gen diff_middle = 
+/* reshape to allow graphs with age as axis */
+reshape long m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
+    f_middle, i(pc01_state_id pc01_district_id pc01_block_id ebb_dummy ///
+    pc01_pca_tot_p pc01_pca_f_lit_rate pc01_pca_m_lit_rate) j(age)
 
-by age, sort: gen diff_f_middle = f_middle - l1.f_middle
+keep if age == 15 | age == 16
 
-foreach sex in m f {
-  gen change_`sex'_middle = `sex'_middle - l1.`sex'_middle
-}
+gen ln_pc01_pca_tot_p = ln(pc01_pca_tot_p)
 
-reghdfe f_middle kgbv_treatment_dummy#i.age c.m_middle#i.age ln_pc01_pca_tot_p ///
-    if age < 20 & age > 13, absorb(pc01_state_id)
+drop if pc01_pca_f_lit_rate < .4213 | pc01_pca_f_lit_rate > .5013
+
+rd f_middle pc01_pca_f_lit_rate, ///
+    degree(2) bins(50) start(-.1) end(.1) ///
+    absorb(pc01_state_id) control(ln_pc01_pca_tot_p)
+
+gr save $tmp/secc_f_lit.gph, replace
+
+graphout $tmp/secc_f_lit.gph

@@ -14,33 +14,33 @@ ssc install asdoc
 /***********/
 
 /* open dataset */
-use $ebb/kgbvs_list_clean, clear
+use $ebb/treated_list_clean, clear
 
 /* sample restricted to blocks that meet gender gap lit rate restriction */
 drop if pc01_pca_lit_gender_gap < .2159
 
 /* regressions with varying buffer size around female lit rate discontinuity */
-reg kgbvs_approved ebb_dummy ///
+reg treated_dummy ebb_dummy ///
     if pc01_pca_f_lit_rate > .4413 & pc01_pca_f_lit_rate < .4813
 estimates store reg1
 
-reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+reg treated_dummy ebb_dummy pc01_pca_lit_gender_gap ///
     if pc01_pca_f_lit_rate > .4413 & pc01_pca_f_lit_rate < .4813
 estimates store reg2
 
-reg kgbvs_approved ebb_dummy ///
+reg treated_dummy ebb_dummy ///
     if pc01_pca_f_lit_rate > .4213 & pc01_pca_f_lit_rate < .5013
 estimates store reg3
 
-reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+reg treated_dummy ebb_dummy pc01_pca_lit_gender_gap ///
     if pc01_pca_f_lit_rate > .4213 & pc01_pca_f_lit_rate < .5013
 estimates store reg4
 
-reg kgbvs_approved ebb_dummy ///
+reg treated_dummy ebb_dummy ///
     if pc01_pca_f_lit_rate > .4013 & pc01_pca_f_lit_rate < .5213
 estimates store reg5
 
-reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+reg treated_dummy ebb_dummy pc01_pca_lit_gender_gap ///
     if pc01_pca_f_lit_rate > .4213 & pc01_pca_f_lit_rate < .5013
 estimates store reg6
 
@@ -48,14 +48,14 @@ reg kgbvs_approved ebb_dummy ///
     if pc01_pca_f_lit_rate > .3813 & pc01_pca_f_lit_rate < .5413
 estimates store reg7
 
-reg kgbvs_approved ebb_dummy pc01_pca_lit_gender_gap ///
+reg treated_dummy ebb_dummy pc01_pca_lit_gender_gap ///
     if pc01_pca_f_lit_rate > .3813 & pc01_pca_f_lit_rate < .5413
 estimates store reg8
 
 /* generate table with regression results */
 esttab reg1 reg2 reg3 reg4 reg5 reg6 reg7 reg8, ///
     drop(_cons) ///
-    coeflabels(ebb_dummy "KGBV participation in 2007-08") ///
+    coeflabels(ebb_dummy "NPEGEL/KGBV participation in 2007-08") ///
     indicate("Pre-program controls = pc01_pca_lit_gender_gap") ///
     mgroups("2% Range" "4% Range" "6% Range" "8% Range", pattern(1 0 1 0 1 0 1 0)) ///
     nonumbers nomtitles ///
@@ -67,32 +67,35 @@ esttab reg1 reg2 reg3 reg4 reg5 reg6 reg7 reg8, ///
 /**********/
 
 /* open dataset */
-use $ebb/kgbvs_list_clean, clear
+use $ebb/treated_list_clean, clear
 
 /* graph a scatterplot with black dots representing EBBs
 (based on ebbs_list.dta coding, rather than the raw qualification metrics) */
 twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if kgbvs_operational == 0 & pc01_pca_lit_gender_gap >= 0 ///
-    & pc01_pca_f_lit_rate <= 0.8, msymbol(Oh) mlwidth(vvthin) msize(vsmall) mlcolor(black)) ///
+    if kgbvs_operational == 0 & npegel == 0 & pc01_pca_lit_gender_gap >= 0 ///
+    & pc01_pca_f_lit_rate <= 0.8, msymbol(O) msize(tiny) mcolor(red)) ///
     (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     if kgbvs_operational > 0 & pc01_pca_lit_gender_gap >= 0 ///
-    &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(black) msize(vsmall)) ///
+    &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(blue) msize(tiny)) ///
+    (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
+    if npegel == 1  & pc01_pca_lit_gender_gap >= 0 ///
+    &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(green) msize(tiny)) ///
     (scatteri .5 .3813 .2159 .3813, recast(line) lcolor(black) lpattern(shortdash)) ///
     (scatteri .5 .5413 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
     (scatteri .2159 .3813 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
     (scatteri .5 .3813 .5 .5413, recast(line) lcolor(black) lpattern(shortdash)), ///
     graphregion(color(white)) ///
-    xsize(8) ysize(4.5) ///
+    xsize(8) ysize(6) ///
     xtitle("Female Rural Literacy Rate") ///
     ytitle("Gender Gap in Rural Literacy") ///
     ylabel(, angle(0) format(%9.2f) nogrid) ///
-    legend(off) ///
+    legend(order(1 2 3) label(1 "No Treatment") label (2 "KGBV") label(3 "NPEGEL")) ///
     xline(.4613, lcolor(black)) ///
     yline(.2159, lcolor(black)) ///
     ylabel(0(0.1)0.5) ///
     xlabel(0(0.2)0.8) ///
     ysc(reverse) ///
-    title(KGBV Eligibility of Rural Blocks) ///
+    title(NPEGEL/KGBV Eligibility of Rural Blocks) ///
     name(fig3, replace)
 
 /* export graph */
@@ -106,13 +109,13 @@ graphout fig3
 use $ebb/kgbvs_list_clean, clear
 
 /* binscatter for literacy rate RD */
-binscatter kgbvs_operational pc01_pca_f_lit_rate ///
+binscatter treated_dummy pc01_pca_f_lit_rate ///
     if pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413 ///
     & pc01_pca_lit_gender_gap > 0.2159, ///
     rd(0.4613) ///
     title(Program Participation, size(medlarge)) ///
     xtitle("Female Rural Literacy Rate") ///
-    ytitle("KGBV Blocks in Bin") ///
+    ytitle("NPEGEL/KGBV Blocks in Bin") ///
     xlabel(0.3813(0.02)0.5413) ///
     xtick(0.3813(0.01)0.5413) ///
     ylabel(0(0.2)1) ///
