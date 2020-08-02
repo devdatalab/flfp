@@ -203,7 +203,7 @@ foreach caste of varlist pc01_pca_f_sc pc01_pca_f_st {
 
 /* male SC/ST population by age cohort (via population pyramid) */
 /* use population pyramid to get absolute estimates for SC/ST pop */
-foreach caste of varlist pc01_pop_m_sc pc01_pop_m_st {
+foreach caste of varlist pc01_pca_m_sc pc01_pca_m_st {
   forvalues age = 0/4 {
     gen `caste'_`age' = `caste' * 0.0212
   }
@@ -235,7 +235,7 @@ drop pc01_pca_f_sc pc01_pca_f_st pc01_pca_m_sc pc01_pca_m_st
 /*********************************/
 
 /* collapse to block level */
-collapse (mean) secc11* pc01_pca_f_s* pc01_pca_m_s* (first) match_rate ///
+collapse (mean) secc11* (sum) pc01_pca_f_s* pc01_pca_m_s* (first) match_rate ///
     [w = pc01_pca_tot_p], ///
     by(pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_id pc01_block_name)
