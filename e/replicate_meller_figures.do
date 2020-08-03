@@ -113,7 +113,7 @@ graphout fig3
 use $ebb/treated_list_clean, clear
 
 /* binscatter for literacy rate RD */
-binscatter treated_dummy pc01_pca_f_lit_rate ///
+binscatter treatment_dummy pc01_pca_f_lit_rate ///
     if pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413 ///
     & pc01_pca_lit_gender_gap > 0.2159, ///
     rd(0.4613) ///
