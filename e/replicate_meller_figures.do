@@ -117,6 +117,7 @@ binscatter treatment_dummy pc01_pca_f_lit_rate ///
     if pc01_pca_f_lit_rate >= 0.3813 & pc01_pca_f_lit_rate <= 0.5413 ///
     & pc01_pca_lit_gender_gap > 0.2159, ///
     rd(0.4613) ///
+    nquantiles(16) ///
     title(Program Participation, size(medlarge)) ///
     xtitle("Female Rural Literacy Rate") ///
     ytitle("NPEGEL/KGBV Blocks in Bin") ///
