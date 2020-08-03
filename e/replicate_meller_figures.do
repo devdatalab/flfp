@@ -72,13 +72,16 @@ use $ebb/treated_list_clean, clear
 /* graph a scatterplot with black dots representing EBBs
 (based on ebbs_list.dta coding, rather than the raw qualification metrics) */
 twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if kgbvs_operational == 0 & npegel == 0 & pc01_pca_lit_gender_gap >= 0 ///
+    if treatment == 0 & pc01_pca_lit_gender_gap >= 0 ///
     & pc01_pca_f_lit_rate <= 0.8, msymbol(O) msize(tiny) mcolor(red)) ///
     (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if kgbvs_operational > 0 & pc01_pca_lit_gender_gap >= 0 ///
+    if treatment == 1 & pc01_pca_lit_gender_gap >= 0 ///
     &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(blue) msize(tiny)) ///
     (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
-    if npegel == 1  & pc01_pca_lit_gender_gap >= 0 ///
+    if treatment == 2 & pc01_pca_lit_gender_gap >= 0 ///
+    &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(orange) msize(tiny)) ///
+    (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
+    if treatment == 3 & pc01_pca_lit_gender_gap >= 0 ///
     &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(green) msize(tiny)) ///
     (scatteri .5 .3813 .2159 .3813, recast(line) lcolor(black) lpattern(shortdash)) ///
     (scatteri .5 .5413 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
@@ -89,7 +92,8 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     xtitle("Female Rural Literacy Rate") ///
     ytitle("Gender Gap in Rural Literacy") ///
     ylabel(, angle(0) format(%9.2f) nogrid) ///
-    legend(order(1 2 3) label(1 "No Treatment") label (2 "KGBV") label(3 "NPEGEL")) ///
+    legend(order(1 2 3 4) label(1 "No Treatment") label(2 "KGBV") label(3 "NPEGEL") ///
+    label(4 "KGBV & NPEGEL") ring(0) position(4)) ///
     xline(.4613, lcolor(black)) ///
     yline(.2159, lcolor(black)) ///
     ylabel(0(0.1)0.5) ///
@@ -106,7 +110,7 @@ graphout fig3
 /**********/
 
 /* open dataset */
-use $ebb/kgbvs_list_clean, clear
+use $ebb/treated_list_clean, clear
 
 /* binscatter for literacy rate RD */
 binscatter treated_dummy pc01_pca_f_lit_rate ///

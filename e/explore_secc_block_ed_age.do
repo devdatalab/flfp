@@ -6,17 +6,19 @@
 use $ebb/secc_block_ed_age_clean.dta, clear
 
 /* merge with EBBs list */
-merge 1:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_clean
+merge 1:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/treated_list_clean
 
 /* reshape to allow graphs with age as axis */
-reshape long m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
-    f_middle, i(pc01_state_id pc01_district_id pc01_block_id kgbv_treatment_dummy ///
-    pc01_pca_tot_p) j(age)
-
-/* generate KGBV dummy */
-gen kgbv_treatment_dummy = .
-replace kgbv_treatment_dummy = 0 if kgbvs_operational == 0
-replace kgbv_treatment_dummy = 1 if kgbvs_operational > 0
+reshape long secc11_educ_years_m secc11_educ_years_m_sc secc11_educ_years_m_st ///
+    secc11_educ_years_f secc11_educ_years_f_sc secc11_educ_years_f_st ///
+    secc11_lit_m secc11_lit_m_sc secc11_lit_m_st ///
+    secc11_lit_f secc11_lit_f_sc secc11_lit_f_st ///
+    secc11_primary_m secc11_primary_m_sc secc11_primary_m_st ///
+    secc11_primary_f secc11_primary_f_sc secc11_primary_f_st ///
+    secc11_middle_m secc11_middle_m_sc secc11_middle_m_st ///
+    secc11_middle_f secc11_middle_f_sc secc11_middle_f_st ///
+    pc01_pca_f_st_ pc01_pca_f_sc_ pc01_pca_m_st_ pc01_pca_m_sc_, ///
+    i(pc01_state_id pc01_district_id pc01_block_id treated_dummy pc01_pca_tot_p) j(age)
 
 /* collapse to age level, since the plots are national */
 collapse (mean) m_educ_years m_lit m_primary m_middle f_educ_years f_lit f_primary ///
