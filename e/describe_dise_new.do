@@ -29,7 +29,9 @@ sort pc01_state_id pc01_district_id pc01_block_id year
 *** AVERAGE ENROLLMENT ***
 **************************
 
-/* gen enrollment variables by year */
+foreach x in g b {
+
+/* gen enrollment variables by year and gender */
 foreach var in 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 {
  gen var`var'`x' = enr_all_mid_`x' if year == `var'
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace var`var'`x' = var`var'`x'[_n-1] if mi(var`var'`x')
@@ -79,7 +81,6 @@ graphout reduced_enr_`x'_middle
 /* keep data from 2003-2008 */
 keep if inrange( year, 2003, 2008)
 
-
 foreach x in g b {
 
 /* gen enr diff var by year */
@@ -101,7 +102,7 @@ absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy 
     ytitle ("Change in Enrollment 2003 - 2008") ///
     title ("Girls- Change in Enrollment between 2003 and 2008")
 
-graphout girls123_mid
+graphout reduced_change_mid_g
 
 /* boys */
 rd diff_total_b pc01_pca_f_lit_rate if year == 2003, degree(2) bins(50) start(-.1) end(.1) ///
@@ -109,7 +110,7 @@ absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy 
 ytitle ("Change in Enrollment 2003 - 2008") ///
       title ("Boys - Change in Enrollment between 2003 and 2008")
 
-graphout boys123_mid
+graphout reduced_change_mid_b
 
 
 /* ols regressions */
