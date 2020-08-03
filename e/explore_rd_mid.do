@@ -9,19 +9,14 @@ gen ln_enr_up_g = ln(enr_all_mid_g + 1)
 forval i = 2002/2015 {
   rd ln_enr_up_g pc01_pca_f_lit_rate if year == `i' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), ///
       bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle("Log Enrollment") ///
-      title(`i') bins(20)
-  // name(g`i') nodraw
-  graphout g1_`i'
-}
-
-
-
+      title(`i') bins(20) name(g`i') nodraw
   local graphs_g "`graphs_g' g`i'"
 }
 
 /* graph combine */
-gr combine `graphs_g', cols(2)  title (RD - Middle School Enrollment for Girls)
-graphout g_combine1
+gr combine `graphs_g', cols(2)  title (RD - Middle School Enrollment for Girls) ///
+    ysize(20) xsize(7) scheme(w538)
+graphout g_combine11
 
 
 
