@@ -82,6 +82,12 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(orange) msize(tiny)) ///
     (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     if treatment == 3 & pc01_pca_lit_gender_gap >= 0 ///
+    &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(yellow) msize(tiny)) ///
+    (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
+    if treatment == 4 & pc01_pca_lit_gender_gap >= 0 ///
+    &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(purple) msize(tiny)) ///
+    (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
+    if treatment == 5 & pc01_pca_lit_gender_gap >= 0 ///
     &  pc01_pca_f_lit_rate <= 0.8, msymbol(O) mcolor(green) msize(tiny)) ///
     (scatteri .5 .3813 .2159 .3813, recast(line) lcolor(black) lpattern(shortdash)) ///
     (scatteri .5 .5413 .2159 .5413, recast(line) lcolor(black) lpattern(shortdash)) ///
@@ -92,8 +98,9 @@ twoway (scatter pc01_pca_lit_gender_gap pc01_pca_f_lit_rate ///
     xtitle("Female Rural Literacy Rate") ///
     ytitle("Gender Gap in Rural Literacy") ///
     ylabel(, angle(0) format(%9.2f) nogrid) ///
-    legend(order(1 2 3 4) label(1 "No Treatment") label(2 "KGBV") label(3 "NPEGEL") ///
-    label(4 "KGBV & NPEGEL") ring(0) position(4)) ///
+    legend(order(1 2 3 4 5 6) label(1 "No Treatment") label(2 "No KGBV, Missing NPEGEL") ///
+    label(3 "KGBV") label(4 "KGBV, Missing NPEGEL") label(5 "NPEGEL") label(6 "KGBV & NPEGEL") ///
+    ring(0) position(4) size(vsmall)) ///
     xline(.4613, lcolor(black)) ///
     yline(.2159, lcolor(black)) ///
     ylabel(0(0.1)0.5) ///
@@ -183,3 +190,7 @@ graph combine $tmp/fig6a.gph $tmp/fig6b.gph, col(1) imargin(medium) ///
     name(fig6, replace)
 
 graphout fig6
+
+foreach type of varlist sc st obc bpl {
+  egen `type'_mean = mean(`type')
+}
