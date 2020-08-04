@@ -17,7 +17,7 @@ forval i = 2002/2015 {
 forval i = 2002/2015 {
   rd ln_enr_up_b pc01_pca_f_lit_rate if year == `i' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), ///
       bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle("Log Enrollment") ///
-      title(`i') bins(20) name(g`i') nodraw
+      title(`i') bins(20) name(b`i') nodraw
   local graphs_b "`graphs_b' b`i'"
 }
 
@@ -44,11 +44,11 @@ group pc01_state_id pc01_district_id
 /* GIRLS */
 forval y = 2002/2015 {
   quireg ln_enr_up_g treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
- & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`y')
+ & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`y') absorb(sgroup)
 }
 
 /* BOYS */
 forval y = 2002/2015 {
   quireg ln_enr_up_b treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
- & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`y')
+ & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`y') absorb(sgroup)
 }
