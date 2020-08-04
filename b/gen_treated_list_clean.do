@@ -26,7 +26,7 @@ label values treatment treatment_label
 /* generate treated dummy */
 gen treatment_dummy = .
 replace treatment_dummy = 0 if treatment == 0
-replace treatment_dummy = 1 if inlist(treatment, 2, 4, 5)
+replace treatment_dummy = 1 if treatment > 1
 
 /* label treatment variable */
 label var treatment "KGBV/NPEGEL treatment"
