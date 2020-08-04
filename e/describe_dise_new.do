@@ -62,23 +62,18 @@ foreach var in avg0203 avg0406 avg0709 avg1012 {
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace ln_`var'_`x' = ln_`var'_`x'[_n-1] if mi(ln_`var'_`x')
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace ln_`var'_`x' = ln_`var'_`x'[_n+1] if mi(ln_`var'_`x')
  }
-}
 
-/* RD graphs */
-
-foreach x in g b {
+/* gen RD graphs */
 foreach var in ln_avg0203 ln_avg0406 ln_avg0709 ln_avg1012 {
 rd `var'_`x' pc01_pca_f_lit_rate if year==2012, degree(2) bins(50) start(-.1) end(0.1) ///
 absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Female Rural Literacy Rate") ///
 ytitle ("`var'") title ("Reduced Form")
 
+/* save graphs */
 gr save $tmp/`var'_`x'_mid.gph, replace
-}
 }
 
 /* combine all graphs */
-
-foreach x in g b {
 gr combine $tmp/ln_avg0203_`x'_mid.gph $tmp/ln_avg0406_`x'_mid.gph $tmp/ln_avg0709_`x'_mid.gph $tmp/ln_avg1012_`x'_mid.gph, ///
 title(Reduced Form - Average Middle School Enrollment for `x') ycommon xcommon
 graphout reduced_enr_`x'_middle
@@ -88,16 +83,14 @@ graphout reduced_enr_`x'_middle
 *** COMPARE ENROLLMENT BY YEAR ***
 **********************************
 
-/* loop rd graphs over all years and generate graphs */
+/* loop rd graphs over all years and generate graphs for boys and girls */
 
 forval i = 2002/2015 {
   rd ln_enr_all_mid_g pc01_pca_f_lit_rate if year == `i' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), ///
       bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle("Log Enrollment") ///
       title(`i') bins(20) name(g`i') nodraw
   local graphs_g "`graphs_g' g`i'"
-}
 
-forval i = 2002/2015 {
   rd ln_enr_all_mid_b pc01_pca_f_lit_rate if year == `i' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), ///
       bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle("Log Enrollment") ///
       title(`i') bins(20) name(g`i') nodraw
