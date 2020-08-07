@@ -26,19 +26,17 @@ keep pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_name pc01_block_id
 	
 /* drop duplicates */	
-sort pc91_state_id pc91_district_id pc91_subdistrict_id pc91_village_id shrid
-qui by pc91_state_id pc91_district_id pc91_subdistrict_id pc91_village_id shrid: gen dup = cond(_N==1,0,_n)
+sort pc01_state_id pc01_district_id pc01_subdistrict_id pc01_village_id
+qui by pc01_state_id pc01_district_id pc01_subdistrict_id pc01_village_id: gen dup = cond(_N==1,0,_n)
 drop if dup > 1
 drop dup	
 
 /* save temp dataset  */
 save $tmp/pc01_01_cleaned_2, replace
 
-
 *********************
 *** MERGE EC DATA ***
 *********************
-
 
 /* use EC all years dataset */
 use $iec/flfp/ec_flfp_all_years, clear
@@ -71,3 +69,37 @@ keep if _merge == 3
 
 /* save dataset */
 save $tmp/pc_ec_block, replace
+
+****************************
+*** BLOCK LEVEL COLLAPSE ***
+****************************
+
+/* use dataset */
+use $tmp/pc_ec_block, clear
+
+/* collapse at year-block level */
+collapse (sum) emp* count*, by (year pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
+    pc01_block_id pc01_block_name)
+
+/* save dataset */
+save $tmp/pc_ec_block_collapse, replace
+
+***************************
+*** MERGE WITH EBB DATA ***
+***************************
+
+/* use ec-pc dataset */
+use $tmp/pc_ec_block_collapse, clear
+
+/* destring id variables */
+destring pc01_state_id pc01_district_id pc01_block_id, replace
+
+/* merge to ebb/kgbv/npegel data */
+merge m:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/treated_list_clean
+
+/* keep merged obs */
+keep if _merge == 3
+
+/* save dataset */
+save $iec/flfp/ec_pc01_ebb, replace
+
