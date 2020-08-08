@@ -29,25 +29,17 @@ foreach var in emp_f count_f emp_f_owner {
     rd ln_`var' pc01_pca_f_lit_rate if year == `i' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), ///
       bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle("Log `var'") ///
       title(`var'_`i') bins(50) name(`var'_`i') nodraw
-  local graphs_`var' "`graphs_`var'' `var'_`i'"
+    local graphs_`var' "`graphs_`var'' `var'_`i'"
 }
-  gr combine `graphs_`var'', title(Reduced Form - `var')
-  graphout `var'
+gr combine `graphs_`var'', title(Reduced Form - `var')
+graphout `var'
 }
 
+/* regressions */
 
-
-
-  /*
-gr combine `graphs_emp_f', title(Reduced Form - Log Female Employment)
-graphout emp_f_ebb
-
-
-
-
-/* regression */
-
-foreach y in 1990 1998 2005 2013 {
-  quireg ln_emp_f treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
- & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`y') absorb(sgroup)
+foreach var in emp_f count_f emp_f_owner {
+  foreach y in 1990 1998 2005 2013 {
+    quireg ln_`var' treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
+    & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`var' in `y') absorb(sgroup)
+}
 }
