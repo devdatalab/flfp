@@ -5,20 +5,14 @@
 /* use basic DISE dataset */
 use $iec/dise/dise_basic_clean, clear
 
-/* merge with DISE enrollment data */
-merge m:1 dise_state year vilcd schcd using $iec/dise/dise_enr_clean
+/* merge all the datasets together */
+foreach dataset in dise_enr_clean dise_facility_clean.dta dise_general_clean {
+  merge m:1 dise_state year vilcd schcd using $iec/dise/`dataset'
+  keep if _merge == 3
+  drop _merge
+}
 
-keep if _merge == 3
-
-drop _merge
-
-/* merge witth  facility data */
-merge m:1 dise_state year vilcd schcd using $iec/dise/dise_facility_clean.dta
-
-keep if _merge == 3
-
-drop _merge
-
+/* save merged dataset as temporary file */
 save $tmp/dise_0, replace
 
 /*
