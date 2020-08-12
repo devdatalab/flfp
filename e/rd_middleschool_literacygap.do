@@ -63,16 +63,14 @@ foreach var in avg0203 avg0406 avg0709 avg1012 {
  by pc01_state_id pc01_district_id pc01_block_id, sort: replace ln_`var'_`x' = ln_`var'_`x'[_n+1] if mi(ln_`var'_`x')
  }
 
-  
 /* gen RD graphs */
 foreach var in ln_avg0203 ln_avg0406 ln_avg0709 ln_avg1012 {
-
     if "`var'" == "ln_avg0203" local locname "2002-2003"
     if "`var'" == "ln_avg0406" local locname "2004-2006"
     if "`var'" == "ln_avg0709" local locname "2007-2009"
     if "`var'" == "ln_avg1012" local locname "2010-2012"
     
-    rd `var'_`x' pc01_pca_lit_gender_gap if year==2012, start(-.1) end(0.1) ylabel(-0.75(0.25)0.75) degree(2) bins(50)  ///
+    rd `var'_`x' pc01_pca_lit_gender_gap if year==2012, start(-.09) end(0.09) ylabel(-0.5(0.5)0.5) degree(2) bins(50)  ///
         absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Literacy Gap Rate") ///
         ytitle (Log Average Enrollment) title (`locname') 
 
