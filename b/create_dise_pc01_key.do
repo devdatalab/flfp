@@ -1,58 +1,83 @@
-/* create dise-pc01 key */
+/*******************************************/
+/* CREATES A PC01 AND DISE BLOCK-LEVEL KEY */
+/*******************************************/
 
-****************************
-*** CREATE EBBS DATASETS ***
-****************************
+/***************************************************/
+/* Prepare Block- and District-Level PC01 Datasets */
+/***************************************************/
 
-/* create district and block level ebbs datasets */
-use $ebb/ebbs_list_clean, clear
+/* import PC01 dataset */
+use $pc01/pc01r_pca_clean, clear
 
-/* rename district names to match DISE */
+/* make all string variables lowercase */
+foreach var of varlist _all {
+	local vartype: type `var'
+	if substr("`vartype'", 1,3) == "str" {
+		replace `var'= ustrlower(`var')
+	}
+}
 
-replace pc01_district_name = "dima hasao" if pc01_district_name=="north cachar hills"
-replace pc01_district_name = "chikkamangalore" if pc01_district_name == "chikmagalur"
-replace pc01_district_name = "khandwa" if pc01_district_name == "east nimar"
-replace pc01_district_name = "khargone" if pc01_district_name == "west nimar"
-replace pc01_district_name = "balasore" if pc01_district_name == "baleshwar"
-replace pc01_district_name = "keonjhar" if pc01_district_name == "kendujhar"
+/* drop villages with less than 100 residents */
+drop if pc01_pca_tot_p < 100
 
-/* manually change block names to prevent fale positive matches */
+/* collapse to block level */
+collapse (firstnm) pc01_pca_tot_p, by(pc01_block_id pc01_block_name pc01_district_id ///
+    pc01_district_name pc01_state_id pc01_state_name)
 
-replace pc01_block_name = "jhariacumjorapokharcumsindri" if ///	
-	pc01_block_name == "jharia cum jorapokhar cum sindri"
-	replace pc01_block_name = "hans2" if pc01_block_name == "hansi-1"
-	replace pc01_block_name = "goalpokhar2" if pc01_block_name == "aaaa"
-	replace pc01_block_name = "gopiballavpur2" if pc01_block_name == "bbbb"
-	replace pc01_block_name = "sikandarpurkaran" if pc01_block_name == "cccc"
-replace pc01_block_name = "tamari" if pc01_block_name == "tamar-1"
+/* recode roman numerals to avoid masala merge error */
+replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
 
+/* fix EBBs which have no name in PC01 ("forest villages" in ebbs_list) */
+global uplist kheri jhansi bahraich gonda mahrajganj sonbhadra
 
-/* save temp dataset */
-save  $tmp/ebbs_district, replace
+foreach district in $uplist {
+  replace pc01_block_name = "forest villages" if mi(pc01_block_name) & ///
+      pc01_state_name == "uttar pradesh" & pc01_district_name == "`district'"
+}
 
-/* keep district and state ideentifies */
-keep id pc01_state_name pc01_state_id pc01_district_name pc01_district_id
+replace pc01_block_name = "forest villages" if mi(pc01_block_name) & ///
+    pc01_state_name == "uttarakhand" & pc01_district_name == "udham singh nagar"
+replace pc01_block_name = "forest villages" if mi(pc01_block_name) & ///
+    pc01_state_name == "uttarakhand" & pc01_district_name == "champawat"
 
-/* gen  duplicates idenitiifies variable */
-sort pc01_state_id pc01_district_id
-quietly by pc01_state_id pc01_district_id: gen dup = cond(_N==1,0,_n)
+/* generate unique identifiers (necessary for masala merge) */
+gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name
 
-/* drop all duplicate occurences */
-drop if dup > 1
-drop dup
+/* destring block ID */
+destring pc01_block_id pc01_state_id pc01_district_id, replace
+
+/* save block level */
+save $tmp/pc01_blocks, replace
+
+/* collapse to district level */
+collapse (firstnm) pc01_pca_tot_p, by(pc01_district_name pc01_district_id ///
+    pc01_state_name pc01_state_id)
+
+/* drop extraneous variable */
+drop pc01_pca_tot_p
+
+/* generate unique IDs */
+tostring pc01_state_id, replace
+gen id = pc01_state_id + "-" + pc01_district_name
+destring pc01_state_id, replace
 
 /* save pc01 dataset */
-save $tmp/ebbs_district2, replace
+save $tmp/pc01_districts, replace
 
-*****************************
-*** MERGE PC01  with DISE ***
-*****************************
+/************************/
+/* Merge PC01 with DISE */
+/************************/
 
 /* use basic DISE dataset */
 use $iec/dise/dise_basic_clean, clear
 
+/* generate key PC01 variables */
+gen pc01_district_name = lower(district)
+gen pc01_state_name = lower(dise_state)
+gen pc01_block_name1 = lower(dise_block_name)
+
 /* remove trailing and leading spaces */
-replace dise_block_name=strtrim(dise_block_name)
+replace pc01_block_name1 = strtrim(pc01_block_name1)
 
 /* gen a year var for merge */
 gen year11 = substr(year, 1, 4)
@@ -67,122 +92,144 @@ by vilcd, sort: egen min_year = min(year)
 keep if year == min_year
 
 /* keep only id variables */
-keep dise_block_name dise_state district
-
-/* make all variables lower case */
-replace dise_block_name = lower(dise_block_name)
-replace dise_state = lower(dise_state)
-replace district = lower(district)
+keep dise_block_name dise_state district pc01_block_name1 pc01_district_name pc01_state_name
 
 /* rename state names */
 foreach var in andhra arunachal himachal madhya uttar {
-replace dise_state = "`var' pradesh" if dise_state == "`var'-pradesh"
+replace pc01_state_name = "`var' pradesh" if pc01_state_name == "`var'-pradesh"
 }
 
-replace dise_state = "west bengal" if dise_state == "west-bengal"
-replace dise_state = "tamil nadu" if dise_state == "tamil-nadu"
-replace dise_state = "andaman & nicobar island" if dise_state == "andaman-and-nicobar-islands"
-replace dise_state = "dadra & nagar haveli" if dise_state == "dadra-and-nagar-haveli"
-replace dise_state = "daman & diu" if dise_state == "daman-and-diu"
-replace dise_state = "jammu & kashmir" if dise_state == "jammu-and-kashmir"
+replace pc01_state_name = "west bengal" if pc01_state_name == "west-bengal"
+replace pc01_state_name = "tamil nadu" if pc01_state_name == "tamil-nadu"
+replace pc01_state_name = "andaman nicobar islands" if pc01_state_name == "andaman-and-nicobar-islands"
+replace pc01_state_name = "dadra nagar haveli" if pc01_state_name == "dadra-and-nagar-haveli"
+replace pc01_state_name = "daman diu" if pc01_state_name == "daman-and-diu"
+replace pc01_state_name = "jammu kashmir" if pc01_state_name == "jammu-and-kashmir" ///
+    | pc01_state_name == "jammu-&-kashmir"
+replace pc01_state_name = "uttarakhand" if pc01_state_name == "uttaranchal"
+replace pc01_state_name = "chhattisgarh" if pc01_state_name == "chattisgarh"
+replace pc01_state_name = "pondicherry" if pc01_state_name == "puducherry"
 
 /* edit district names */
-
-replace district = "aurangabad" if district == "aurangabad (maharashtra)"
-
 foreach var in east west south north {
-  replace district = "`var'" if district == "`var' delhi"
-  replace district = "`var'" if district == "`var' sikkim"
+  replace pc01_district_name = "`var'" if pc01_district_name == "`var' delhi"
+  replace pc01_district_name = "`var'" if pc01_district_name == "`var' sikkim"
 }
 
-/* drop collective  NE states entry*/
-drop if dise_state == "north-eastern-states"
-
-/* rename key variables */
-ren dise_block_name pc01_block_name
-ren district pc01_district_name
-ren dise_state pc01_state_name
+/* rename districts */
+replace pc01_district_name = "aurangabad" if pc01_district_name == "aurangabad (maharashtra)"
+replace pc01_district_name = "kamrup" if pc01_district_name == "kamrup-rural"
+replace pc01_district_name = "north cachar hills" if pc01_district_name == "dima hasao"
+replace pc01_district_name = "bilaspur" if pc01_district_name == "bilaspur (chhattisgarh)"
+replace pc01_district_name = "raigarh" if pc01_district_name == "raigarh (chhattisgarh)"
+replace pc01_district_name = "bangalore" if pc01_district_name == "bangalore u south"
+replace pc01_district_name = "chikmagalur" if pc01_district_name == "chikkamangalore"
+replace pc01_district_name = "east nimar" if pc01_district_name == "khandwa" ///
+    | pc01_district_name == "burhanpur"
+replace pc01_district_name = "west nimar" if pc01_district_name == "khargone"
+replace pc01_district_name = "raigarh" if pc01_district_name == "raigarh (maharashtra)"
+replace pc01_district_name = "baleshwar" if pc01_district_name == "balasore"
+replace pc01_district_name = "kendujhar" if pc01_district_name == "keonjhar"
+replace pc01_district_name = "sant ravidas nagar bhadohi" if pc01_district_name == "bhadoi"
+replace pc01_district_name = "medinipur" if pc01_district_name == "paschim medinipur" ///
+    | pc01_district_name == "purba medinipur"
 
 /* drop duplicates*/
-sort pc01_state_name  pc01_district_name  pc01_block_name
-quietly by pc01_state_name pc01_district_name pc01_block_name: gen dup = cond(_N==1,0,_n)
+sort pc01_state_name pc01_district_name pc01_block_name1
+quietly by pc01_state_name pc01_district_name pc01_block_name1: gen dup = cond(_N==1,0,_n)
 drop if dup > 1
 drop dup
 
-**************
-/* DISTRICT */
-**************
-
 /*  generate unique identifiers for observations (necessary for masala merge) */
-gen id = _n
+gen id = pc01_state_name + "-" + pc01_district_name + "_" + pc01_block_name1
 tostring id, replace
+
+/* save as temporary dataset */
+save $tmp/dise_clean, replace
+
+/***************************/
+/* Match at District-Level */
+/***************************/
+
+/* open temporary DISE dataset */
+use $tmp/dise_clean, clear
 
 /* use masala merge to fuzzy merge datasets */
-masala_merge pc01_state_name using $tmp/ebbs_district2, s1(pc01_district_name) idmaster(id) idusing(id)
+masala_merge pc01_state_name using $tmp/pc01_districts, ///
+    s1(pc01_district_name) idmaster(id) idusing(id)
 
 /* merge using and master names */
-gen pc01_district_name = pc01_district_name_master
-replace pc01_district_name = pc01_district_name_using if mi(pc01_district_name_master)
+ren pc01_district_name_using pc01_district_name
 
-/* drop merge variable */
-drop _merge
-
-/* drop unmatched variable */
+/* drop if unmatched */
 drop if match_source == 6
 
-/* gen unique identifies */
-gen id = _n
-tostring id, replace
-
 /* drop merge variables */
-drop id_using id_master pc01_district_name_master pc01_district_name_using
-
-/* drop merge variables */
-drop match_source masala_dist
+drop id_using id_master pc01_district_name_master match_source masala_dist _merge
 
 /* drop missing block names obs */
-drop if mi(pc01_block_name)
+drop if mi(pc01_block_name1)
 
-save $tmp/key1, replace
+/* drop duplicates */
+sort pc01_state_name pc01_district_name pc01_block_name1
+quietly by pc01_state_name pc01_district_name pc01_block_name1: gen dup = cond(_N==1,0,_n)
+drop if dup > 1
+drop dup
 
-use $tmp/key1, clear
+/* gen unique identifiers */
+tostring pc01_state_id pc01_district_id, replace
+gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name1
+destring pc01_state_id pc01_district_id, replace
+
+/* rename PC01 block name to facilitate merge */
+ren pc01_block_name1 pc01_block_name
+
+/* save district-level key */
+save $tmp/district_level_match, replace
+
 ***********
 /* BLOCK */
 ***********
+
+/* use district_level key */
+use $tmp/district_level_match, clear
+
 /* masala merge with block names from pc01 */
-masala_merge pc01_state_name pc01_state_id pc01_district_id pc01_district_name using $tmp/ebbs_district, s1(pc01_block_name) idmaster(id) idusing(id)
+masala_merge pc01_state_name pc01_district_name ///
+    using $tmp/pc01_blocks, s1(pc01_block_name) idmaster(id) idusing(id)
+
+/* process manual matches */
+process_manual_matches, outfile($tmp/dise_pc01_manual.csv) ///
+    infile(/scratch/plindsay/unmatched_observations_140308.csv) ///
+    s1(pc01_block_name) idmaster(id_master) idusing(id_using)
+
+/* open merge results */
+use $tmp/merge_results_140308, clear
 
 /* insert manual matches */
-insert_manual_matches, manual_file(/scratch/pgupta/manual_dise.csv) idmaster(id_master) idusing(id_using)
-
-/* drop merge variable */
-drop _merge
+insert_manual_matches, manual_file($tmp/manual_dise.csv) ///
+    idmaster(id_master) idusing(id_using)
 
 /* merge using and master block names into one variable */
-gen pc01_block_name = pc01_block_name_master
-replace pc01_block_name = pc01_block_name_using if mi(pc01_block_name_master)
-
-/* generate unique identifiers for observations */
-gen id = _n
-tostring id, replace
-
-/* drop variables which will be generates in future masala merges */
-drop id_using id_master pc01_block_name_master pc01_block_name_using
-
-/* drop merge variables */
-drop match_source masala_dist
+ren pc01_block_name_using pc01_block_name
 
 /* keep only key variables */
-keep pc01_state_name pc01_district_name pc01_block_name pc01_state_id pc01_district_id pc01_block_id
+keep pc01_state_name pc01_district_name pc01_block_name pc01_state_id ///
+    pc01_district_id pc01_block_id dise_state district dise_block_name
 
-/* drop missing*/
-foreach var in pc01_state_name pc01_state_id pc01_district_name pc01_district_id pc01_block_name pc01_block_id {
-  drop if mi(`var')
-}
+/* drop missing data */
+drop if mi(dise_block_name) | mi(pc01_block_name)
 
-/* remove leading and ttrailing space from block names */
-replace pc01_block_name=strtrim(pc01_block_name)
+/* label key variables */
+label var pc01_block_name "PC01 Block Name"
+label var pc01_district_name "PC01 District Name"
+label var pc01_state_name "PC01 State Name"
+label var dise_state "DISE11 State Name"
+label var district "DISE11 District Name"
+label var dise_block_name "DISE11 Block Name"
+label var pc01_state_id "PC01 State ID"
+label var pc01_district_id "PC01 District ID"
+label var pc01_block_id "PC01 Block ID"
 
-/* save datase to temp and ebb */
-save $tmp/dise_pc01_key, replace
-save $iec/flfp/dise_pc01_key, replace
+/* save key */
+save $ebb/pc01_dise_key, replace
