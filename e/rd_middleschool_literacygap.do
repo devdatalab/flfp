@@ -66,9 +66,15 @@ foreach var in avg0203 avg0406 avg0709 avg1012 {
   
 /* gen RD graphs */
 foreach var in ln_avg0203 ln_avg0406 ln_avg0709 ln_avg1012 {
-rd `var'_`x' pc01_pca_lit_gender_gap if year==2012 & (`var'_`x' < 1 | `var'_`x' > -1) , degree(2) bins(50)  ///
-absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Literacy Gap Rate") ///
-ytitle (`var') title ("Reduced Form") 
+
+    if "`var'" == "ln_avg0203" local locname "2002-2003"
+    if "`var'" == "ln_avg0406" local locname "2004-2006"
+    if "`var'" == "ln_avg0709" local locname "2007-2009"
+    if "`var'" == "ln_avg1012" local locname "2010-2012"
+    
+    rd `var'_`x' pc01_pca_lit_gender_gap if year==2012, start(-.1) end(0.1) ylabel(-0.75(0.25)0.75) degree(2) bins(50)  ///
+        absorb(pc01_state_id) control(ln_pc01_pca_tot_p) xtitle ("Literacy Gap Rate") ///
+        ytitle (Log Average Enrollment) title (`locname') 
 
 /* save graphs */
 gr save $tmp/`var'_`x'_mid.gph, replace
