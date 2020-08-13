@@ -26,12 +26,6 @@ drop if pc01_pca_f_lit_rate < 0.4613
 /* normalize running variable */
 replace pc01_pca_lit_gender_gap = pc01_pca_lit_gender_gap - 0.2159
 
-/* create a treatment variable for the RD */
-gen treatment = pc01_pca_lit_gender_gap > 0
-
-/* create a right side slope for the RD estimation */
-gen lit_right = pc01_pca_lit_gender_gap * treatment
-
 /* sort by state district block year */
 sort pc01_state_id pc01_district_id pc01_block_id year
 
@@ -116,10 +110,17 @@ graphout b_combine_all
 group pc01_state_id
 group pc01_state_id pc01_district_id 
 
+/* create a treatment variable for the RD */
+gen treatment = pc01_pca_lit_gender_gap > 0
+
+/* create a right side slope for the RD estimation */
+gen lit_right = pc01_pca_lit_gender_gap * treatment
+
+
 /* GIRLS */
 forval y = 2002/2015 {
-  quireg ln_enr_all_mid_g treatment pc01_pca_lit_gender_gap lit_right if year == `y', ///
-       cluster(sdgroup) title(`y')
+  quireg ln_enr_all_mid_g treatment pc01_pca_lit_gender_gap lit_right if year == `y' & inrange(pc01_pca_lit_gender_gap, -0.1,0.1), ///
+       cluster(sdgroup) absorb(sgroup) title(`y')
 }
 
 /* BOYS */
