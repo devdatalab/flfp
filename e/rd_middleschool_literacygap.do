@@ -78,33 +78,35 @@ title(Reduced Form - Average Middle School Enrollment for `x') ycommon xcommon
 graphout reduced_enr_`x'_middle
 }
 
-**********************************
-*** COMPARE ENROLLMENT BY YEAR ***
-**********************************
-
-/* loop rd graphs over all years and generate graphs for boys and girls */
-
-forval i = 2002/2015 {
-  rd ln_enr_all_mid_g pc01_pca_lit_gender_gap if year == `i' , ///
-      bw degree(1) xtitle("Literacy Gap") ytitle("Log Enrollment") ///
-      title(`i') bins(20) name(g`i') nodraw
-  local graphs_g "`graphs_g' g`i'"
-
-  rd ln_enr_all_mid_b pc01_pca_lit_gender_gap if year == `i' , ///
-      bw degree(1) xtitle("Literacy Gap") ytitle("Log Enrollment") ///
-      title(`i') bins(20) name(b`i') nodraw
-  local graphs_b "`graphs_b' b`i'"
-}
-
-/* graph combine */
-
-gr combine `graphs_g', cols(2)  title (RD - Middle School Enrollment for Girls) ///
-    ysize(20) xsize(7) scheme(w538)
-graphout g_combine_all
-
-gr combine `graphs_b', cols(2)  title (RD - Middle School Enrollment for Boys) ///
-    ysize(20) xsize(7) scheme(w538)
-graphout b_combine_all
+/***************************************************************************************/
+/* **********************************                                                  */
+/* *** COMPARE ENROLLMENT BY YEAR ***                                                  */
+/* **********************************                                                  */
+/*                                                                                     */
+/* /\* loop rd graphs over all years and generate graphs for boys and girls *\/        */
+/*                                                                                     */
+/* forval i = 2002/2015 {                                                              */
+/*   rd ln_enr_all_mid_g pc01_pca_lit_gender_gap if year == `i' , ///                  */
+/*       bw degree(1) xtitle("Literacy Gap") ytitle("Log Enrollment") ///              */
+/*       title(`i') bins(20) name(g`i') nodraw                                         */
+/*   local graphs_g "`graphs_g' g`i'"                                                  */
+/*                                                                                     */
+/*   rd ln_enr_all_mid_b pc01_pca_lit_gender_gap if year == `i' , ///                  */
+/*       bw degree(1) xtitle("Literacy Gap") ytitle("Log Enrollment") ///              */
+/*       title(`i') bins(20) name(b`i') nodraw                                         */
+/*   local graphs_b "`graphs_b' b`i'"                                                  */
+/* }                                                                                   */
+/*                                                                                     */
+/* /\* graph combine *\/                                                               */
+/*                                                                                     */
+/* gr combine `graphs_g', cols(2)  title (RD - Middle School Enrollment for Girls) /// */
+/*     ysize(20) xsize(7) scheme(w538)                                                 */
+/* graphout g_combine_all                                                              */
+/*                                                                                     */
+/* gr combine `graphs_b', cols(2)  title (RD - Middle School Enrollment for Boys) ///  */
+/*     ysize(20) xsize(7) scheme(w538)                                                 */
+/* graphout b_combine_all                                                              */
+/***************************************************************************************/
 
 /* create state and district fixed effects */
 group pc01_state_id
