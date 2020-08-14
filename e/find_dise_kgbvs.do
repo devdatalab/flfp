@@ -40,9 +40,6 @@ save $tmp/findkgbvs, replace
 /* open dataset */
 use $tmp/findkgbvs, clear
 
-/* use one state */
-keep if dise_state == "West-Bengal"
-
 /* use only the most recent data */
 keep if year == "2015-2016"
 
@@ -111,9 +108,12 @@ replace kgbv_pos=strpos(school_name, "KASTURBA A BALIKA") if kgbv_pos==0
 replace kgbv_pos=strpos(school_name, "KASTURABA GANDI B") if kgbv_pos==0
 replace kgbv_pos=strpos(school_name, "GHANDHI BALIKA") if kgbv_pos==0
 replace kgbv_pos=strpos(school_name, "KASTURBA HINDI") if kgbv_pos==0
+replace kgbv_pos=strpos(school_name, "KASTURIBA VIDYA") if kgbv_pos==0
+replace kgbv_pos=strpos(school_name, "GOVT GIRL") if kgbv_pos==0 & dise_state == "Orissa"
+replace kgbv_pos=strpos(school_name, "PROJECT") if kgbv_pos==0 & dise_state == "Bihar"
 
 /* replace misidentifications of private schools */
-replace kgbv_pos = 0 if schmgt == 4 | schmgt == 5
+replace kgbv_pos = 0 if schmgt == 5
 
 /* check identified KGBVs */
 tab kgbv_pos
@@ -122,7 +122,43 @@ tab kgbv_pos
 list school_name if kgbv_pos == 0 & strpos(school_name, "KAST") > 0 ///
     & schmgt != 4 & schmgt != 5
 
+/*******************************/
+/* Further Explore Some States */
+/*******************************/
+
+/* merge with DISE x PC01 key */
+merge m:1 dise_state district dise_block_name using $ebb/pc01_dise_key
+drop if _merge == 2
+drop _merge
+
+/* merge with KGBVs list */
+merge m:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_clean
+drop if _merge == 2
+drop _merge
+
+/* exclude blocks with previously identified KGBV identifiers */
+sort dise_block_name
+by dise_block_name: egen max_kgbv = max(kgbv_pos)
+
+/* list schools in blocks which should have a KGBV */
+list school_name if max_kgbv == 0 & kgbvs_operational > 0 & schtype == 2
+
+/*******************************/
+/* Generate Summary Statistics */
+/*******************************/
+
+/* generate KGBV dummy */
+gen kgbv_dummy = .
+replace kgbv_dummy = 1 if kgbv_pos > 0
+replace kgbv_dummy = 0 if kgbv_pos == 0
+
+/* generate summary stats */
+tab schmgt if kgbv_dummy == 1
+tab schtype if kgbv_dummy == 1
+tab schcat if kgbv_dummy == 1
+summ enr_all_b if kgbv_dummy == 1, detail
+summ enr_all_g if kgbv_dummy == 1, detail
+
 /*********************************/
 /* Identify KGBVs in Prior Years */
 /*********************************/
-
