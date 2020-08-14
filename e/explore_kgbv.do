@@ -1,5 +1,50 @@
+use $tmp/dise_merged, clear
+
+keep if year == "2005-2006"
+
+keep if schtype == "2"
+
+keep if dise_state == "Gujarat"
+
+/* edit school names */
+replace school_name = strlower(school_name)
+replace school_name = strtrim(school_name)
+replace school_name = stritrim(school_name)
+
+/* sort */
+sort school_name
+
+/* gen identifying vars */
+gen schname1 = substr(school_name, 1, 1)
+gen schname2 = substr(school_name, 1, 2)
+gen schname3 = substr(school_name, 1, 3)
+gen schname4 = substr(school_name, 1, 4)
+
+
+/* list names */
+list school_name if schname2 == "kg"
+list school_name if schname3 == "kas"
+list school_name if schname3 == "k.g"
+list school_name if schname3 == "k. "
+list school_name if schname3 == "k g"
+list school_name if schname4 == "k. g."
+list school_name if schname4 == "kgbv"
+
+
+
+
+
+
+
+
+
+
+/*
+
 /* use dataset */
 use $iec/dise/dise_basic_clean, clear
+
+merge m:1 dise_state vilcd schcd using $iec/dise/dise_general_clean
 
 /* keep single state */
 keep if dise_state == "Uttar-Pradesh"
@@ -7,10 +52,8 @@ keep if dise_state == "Uttar-Pradesh"
 /* keep 2005-06 data */
 keep if year == "2005-2006"
 
+/*
 /* edit school names */
-replace school_name = strlower(school_name)
-replace school_name = strtrim(school_name)
-replace school_name = stritrim(school_name)
 
 /* sort */
 sort school_name

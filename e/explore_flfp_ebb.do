@@ -22,23 +22,28 @@ gen lit_right = pc01_pca_f_lit_rate * treatment_lit
 group pc01_state_id
 group pc01_state_id pc01_district_id
  
+/* set local for variables */
+local emp_f "Female Employment"
+local count_f "Female Owned Firms"
+local emp_f_owner "Emp. in Female Firms"
+
 /* generate and save RD graphs */
 
 foreach var in emp_f count_f emp_f_owner {
     foreach i in 1998 2005 2013 {
     rd ln_`var' pc01_pca_f_lit_rate if year == `i' & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), ///
-      bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle("Log `var'") ///
-      title(`var'_`i') bins(50) name(`var'_`i') nodraw
+      bw degree(1) ylabel(6(.5)9) xtitle("Female Literacy Rate") ytitle(Log ``var'') ///
+      title(`i') bins(50) name(`var'_`i') nodraw
     local graphs_`var' "`graphs_`var'' `var'_`i'"
 }
-gr combine `graphs_`var'', title(Reduced Form - `var')
+gr combine `graphs_`var'', title(Reduced Form - ``var'') ycommon xcommon
 graphout `var'
 }
 
 /* regressions */
 
 foreach var in emp_f count_f emp_f_owner {
-  foreach y in 1990 1998 2005 2013 {
+  foreach y in 1998 2005 2013 {
     quireg ln_`var' treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
     & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`var' in `y') absorb(sgroup)
 }
