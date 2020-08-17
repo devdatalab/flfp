@@ -41,7 +41,7 @@ save $tmp/findkgbvs, replace
 use $tmp/findkgbvs, clear
 
 /* use only the most recent data */
-keep if year == "2015-2016"
+keep if year == "2005-2006"
 
 /* generate variable that indicates where in school names the KGBV indicator appears */
 gen kgbv_pos = strpos(school_name, "KGBV")
@@ -116,7 +116,7 @@ replace kgbv_pos=strpos(school_name, "PROJECT") if kgbv_pos==0 & dise_state == "
 replace kgbv_pos = 0 if schmgt == 5
 
 /* check identified KGBVs */
-tab kgbv_pos
+tab dise_state if kgbv_pos > 0
 
 /* find additional KGBV indicators */
 list school_name if kgbv_pos == 0 & strpos(school_name, "KAST") > 0 ///
@@ -158,7 +158,3 @@ tab schtype if kgbv_dummy == 1
 tab schcat if kgbv_dummy == 1
 summ enr_all_b if kgbv_dummy == 1, detail
 summ enr_all_g if kgbv_dummy == 1, detail
-
-/*********************************/
-/* Identify KGBVs in Prior Years */
-/*********************************/
