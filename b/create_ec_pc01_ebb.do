@@ -47,6 +47,12 @@ quietly by year shric shrid: gen dup = cond(_N==1,0,_n)
 drop if dup >1
 drop dup
 
+/* remove outliers */
+drop if emp_f/(emp_m + emp_f) > 0.5
+drop if count_f/(count_m + count_f) > 0.5
+drop if emp_m == 0
+drop if count_m == 0
+
 /* merge with shrid-village pc01 data */
 merge m:1 shrid using $tmp/pc01_01_cleaned_1
 

@@ -1,8 +1,11 @@
 /* use ec-pc01-ebb dataset */
 use $iec/flfp/ec_pc01_ebb, clear
 
+/* gen fshare var */
+gen fshare = emp_f/(emp_m+emp_f)
+
 /* generate log emp count vars */
-foreach var in emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
+foreach var in fshare emp_f emp_m count_f count_m emp_f_owner emp_m_owner {
   gen ln_`var' = ln(`var')
 }
 
@@ -18,10 +21,20 @@ gen treatment_lit = pc01_pca_f_lit_rate < 0
 /* create a right side slope for the RD estimation */
 gen lit_right = pc01_pca_f_lit_rate * treatment_lit
 
+/* create var that ideintifies blocks with all years of data */
+bysort pc01_state_name pc01_district_name pc01_block_name: egen all_years2 = count(emp_f)
+
+/* create var that idenitifes it it is a non-m&l block */
+gen non_ml = (mi(npegel))
+
+/* drop extremes */
+drop if emp_f == 0
+drop if emp_f > 40000
+
 /* create state and district fixed effects */
 group pc01_state_id
 group pc01_state_id pc01_district_id
- 
+
 /* set local for variables */
 local emp_f "Female Employment"
 local count_f "Female Owned Firms"
@@ -40,11 +53,23 @@ gr combine `graphs_`var'', title(Reduced Form - ``var'') ycommon xcommon
 graphout `var'
 }
 
+
 /* regressions */
 
 foreach var in emp_f count_f emp_f_owner {
   foreach y in 1998 2005 2013 {
     quireg ln_`var' treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
     & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`var' in `y') absorb(sgroup)
+}
+}
+
+/* regressions for m&l data which exists in all years */
+
+
+foreach var in emp_f count_f emp_f_owner {
+  foreach y in 1998 2005 2013 {
+    quireg ln_`var' treatment pc01_pca_f_lit_rate lit_right if year == `y' ///
+        & inrange(pc01_pca_f_lit_rate, -0.1, 0.1) & all_years2 ==4 & non_ml == 0 ///
+        , cluster(sdgroup) title(`var' in `y') absorb(sgroup)
 }
 }
