@@ -71,6 +71,12 @@ save $tmp/pc01_districts, replace
 /* use basic DISE dataset */
 use $iec/dise/dise_basic_clean, clear
 
+/* drop duplicates (different years, villages, schools) */
+sort dise_state district dise_block_name
+quietly by dise_state district dise_block_name: gen dup = cond(_N==1,0,_n)
+drop if dup > 1
+drop dup
+
 /* generate key PC01 variables */
 gen pc01_district_name = lower(district)
 gen pc01_state_name = lower(dise_state)
@@ -84,26 +90,10 @@ foreach var of varlist pc01_block_name1 pc01_district_name pc01_state_name {
   replace `var' = subinstr(`var', "-", " ",.)
 }
 
-/* gen a year var for merge */
-gen year11 = substr(year, 1, 4)
-drop year
-rename year11 year
-
-/* destring year */
-destring year, replace
-
-/* keep when vilcd appears first */
-by vilcd, sort: egen min_year = min(year)
-keep if year == min_year
-
 /* keep only id variables */
 keep dise_block_name dise_state district pc01_block_name1 pc01_district_name pc01_state_name
 
 /* rename state names */
-foreach var in andhra arunachal himachal madhya uttar {
-replace pc01_state_name = "`var' pradesh" if pc01_state_name == "`var'-pradesh"
-}
-
 replace pc01_state_name = "andhra pradesh" if pc01_state_name == "telangana"
 replace pc01_state_name = "andaman nicobar islands" if pc01_state_name == "andaman and nicobar islands"
 replace pc01_state_name = "dadra nagar haveli" if pc01_state_name == "dadra and nagar haveli"
@@ -185,14 +175,8 @@ replace pc01_district_name = "medinipur" if pc01_district_name == "paschim medin
 replace pc01_district_name = "ariyalur" if inlist(pc01_block_name, "andimadam", "ariyalur", ///
     "jayankondam", "sendurai", "thirumanur", "tpalur")
 
-/* drop duplicates*/
-sort pc01_state_name pc01_district_name pc01_block_name1
-quietly by pc01_state_name pc01_district_name pc01_block_name1: gen dup = cond(_N==1,0,_n)
-drop if dup > 1
-drop dup
-
 /*  generate unique identifiers for observations (necessary for masala merge) */
-gen id = pc01_state_name + "-" + pc01_district_name + "_" + pc01_block_name1
+gen id = dise_state + "-" + district + "_" + dise_block_name
 
 /* save as temporary dataset */
 save $tmp/dise_clean, replace
@@ -215,21 +199,13 @@ ren pc01_district_name_using pc01_district_name
 drop if match_source == 6
 
 /* drop merge variables */
-drop id_using id_master pc01_district_name_master match_source masala_dist _merge
+drop id_using pc01_district_name_master match_source masala_dist _merge
 
 /* drop missing block names obs */
 drop if mi(pc01_block_name1)
 
-/* drop duplicates */
-sort pc01_state_name pc01_district_name pc01_block_name1
-quietly by pc01_state_name pc01_district_name pc01_block_name1: gen dup = cond(_N==1,0,_n)
-drop if dup > 1
-drop dup
-
 /* gen unique identifiers */
-tostring pc01_state_id pc01_district_id, replace
-gen id = pc01_state_id + "-" + pc01_district_id + "-" + pc01_block_name1
-destring pc01_state_id pc01_district_id, replace
+ren id_master id
 
 /* rename PC01 block name to facilitate merge */
 ren pc01_block_name1 pc01_block_name
@@ -237,9 +213,9 @@ ren pc01_block_name1 pc01_block_name
 /* save district-level key */
 save $tmp/district_level_match, replace
 
-***********
-/* BLOCK */
-***********
+/************************/
+/* Match at Block-Level */
+/************************/
 
 /* use district_level key */
 use $tmp/district_level_match, clear
@@ -257,7 +233,7 @@ process_manual_matches, outfile($tmp/dise_pc01_manual_match.csv) ///
 use $tmp/merge_results_85363, clear
 
 /* insert manual matches */
-insert_manual_matches, manual_file($tmp/dise_pc01_manual_match.csv) ///
+insert_manual_matches, manual_file($tmp/manual_dise) ///
     idmaster(id_master) idusing(id_using)
 
 /* drop if unmatched */
