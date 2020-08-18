@@ -82,9 +82,9 @@ foreach state in $statelist {
   /* drop bad caste data */
   drop if sc_st == -9999 | sc_st == -9998
   
-  /*******************************************/
-  /* Define Educational Attainment Variables */
-  /*******************************************/
+  /***************************************/
+  /* Define Education/Marriage Variables */
+  /***************************************/
   
   /* recode educational attainment to total years in school */
   recode ed (1 = 0) (2 = 2) (3 = 5) (4 = 8) (5 = 10) (6 = 12) (7 = 14), gen(secc11_educ_years)
@@ -104,19 +104,24 @@ foreach state in $statelist {
   /* at least middle */
   replace secc11_middle = 1 if ed > 3
 
+  /* generate marital dummy  */
+  gen secc11_married = .
+  replace secc11_married = 0 if marital == 1
+  replace secc11_married = 1 if inlist(marital, 2, 3, 4, 5)
+
   /* generate sex-based educational attainment variables */
-  foreach edu of varlist secc11* {
-    gen `edu'_m = `edu' if sex == 1
-    gen `edu'_f = `edu' if sex == 2
+  foreach var of varlist secc11* {
+    gen `var'_m = `var' if sex == 1
+    gen `var'_f = `var' if sex == 2
   }
 
   /* drop intermediate variables */
-  drop secc11_educ_years secc11_lit secc11_primary secc11_middle
+  drop secc11_educ_years secc11_lit secc11_primary secc11_middle secc11_married
 
   /* generate ST/SC educational attainment variables */
-  foreach edu of varlist secc11* {
-    gen `edu'_sc = `edu' if sc_st == 1
-    gen `edu'_st = `edu' if sc_st == 2
+  foreach var of varlist secc11* {
+    gen `var'_sc = `var' if sc_st == 1
+    gen `var'_st = `var' if sc_st == 2
   }
   
   /* collapse again, but now unique on household ID and age */
@@ -133,17 +138,8 @@ foreach state in $statelist {
 
   /* merge with PC01 data */
   merge 1:1 pc01_state_id pc01_village_id using $pc01/pc01r_pca_clean
-
-  /* generate %  match rate */
-  egen unmatched = total(_merge == 1)
-  egen matched = total(_merge == 3)
-  gen match_rate = matched / (unmatched + matched)
-
-  /* drop unmatched observations */
   keep if _merge == 3
-
-  /* drop extraneous variables */
-  drop _merge matched unmatched
+  drop _merge
 
   /* save merged dataset */
   save $tmp/`state'_pc01_secc_merge, replace
@@ -235,7 +231,7 @@ drop pc01_pca_f_sc pc01_pca_f_st pc01_pca_m_sc pc01_pca_m_st pc01_pca_tot_f
 /*********************************/
 
 /* collapse to block level */
-collapse (mean) secc11* (sum) pc01_pca_f_s* pc01_pca_m_s* pc01_pca_tot_f* (first) match_rate ///
+collapse (mean) secc11* (sum) pc01_pca_f_s* pc01_pca_m_s* pc01_pca_tot_f* ///
     [w = pc01_pca_tot_p], ///
     by(pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_id pc01_block_name)
