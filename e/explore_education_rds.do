@@ -2,8 +2,15 @@
 /* RD plots of DISE by year */
 /****************************/
 
-/* open DISE enrollment and lit rate dataset */
-use $flfp/dise_ebb_analysis_2.dta, clear
+use $iec/dise/dise_basic_clean, clear
+merge m:1 dise_state year vilcd schcd using $iec/dise/dise_enr_clean
+keep if _merge == 3
+drop _merge
+
+merge m:1 dise_state district dise_block_name using $ebb/pc01_dise_key
+drop _merge
+
+
 
 /* create middle school enr and log enrollment */
 egen enr_up_b = rowtotal(enr_all_b6 enr_all_b7 enr_all_b8 )
@@ -39,8 +46,6 @@ forval y = 2003/2008 {
 forval y = 2003/2008 {
   quireg ln_enr_up_b treatment pc01_pca_f_lit_rate lit_right if year == `y', cluster(sdgroup) absorb(sgroup)
 }
-
-
 
 /******************************************/
 /* study RD on enrollment by birth cohort */
@@ -94,17 +99,17 @@ append_to_file using $f, s(b, se, p, n, est, age)
 forval age = 5/30 {
 
   /* estimate impact on primary completion */
-  quireg f_primary`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
+  quireg secc11_primary_f_st`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
   append_est_to_file using $f, b(treatment) s(primary-g,`age')
   
   /* estimate impact on middle completion */
-  quireg f_middle`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
+  quireg secc11_middle_f_st`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
   append_est_to_file using $f, b(treatment) s(middle-g,`age')
 
   /* repeat estimates for boys */
-  quireg m_primary`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
+  quireg secc11_primary_m_st`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
   append_est_to_file using $f, b(treatment) s(primary-b,`age')
-  quireg m_middle`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
+  quireg secc11_middle_m_st`age' treatment pc01_pca_f_lit_rate lit_right if inrange(pc01_pca_f_lit_rate, -.08, .08), absorb(sgroup)
   append_est_to_file using $f, b(treatment) s(middle-b,`age')
 }
 
@@ -144,5 +149,5 @@ twoway ///
 graphout rd_middle_b
 
 /* combine the four panels */
-graph combine pg pb mg mb
-graphout combined
+graph combine pg pb mg mb, title("Scheduled Tribe")
+graphout combined_st
