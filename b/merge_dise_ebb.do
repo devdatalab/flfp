@@ -1,75 +1,12 @@
-******************************************************
-**** CLEAN AND MERGE DISE DATA WITH PC01 AND EBBS ****
-******************************************************
+********************************************
+**** MERGE DISE DATA WITH PC01 AND EBBS ****
+********************************************
 
 /* use new-old dise dataset */
 use $tmp/dise_old_new, clear
 
-/* make all variables lower case */
-replace dise_block_name = lower(dise_block_name)
-replace dise_state = lower(dise_state)
-replace district = lower(district)
-
-/* rename state names */
-foreach var in andhra arunachal himachal madhya uttar {
-replace dise_state = "`var' pradesh" if dise_state == "`var'-pradesh"
-}
-
-replace dise_state = "west bengal" if dise_state == "west-bengal"
-replace dise_state = "tamil nadu" if dise_state == "tamil-nadu"
-replace dise_state = "andaman & nicobar island" if dise_state == "andaman-and-nicobar-islands"
-replace dise_state = "dadra & nagar haveli" if dise_state == "dadra-and-nagar-haveli"
-replace dise_state = "daman & diu" if dise_state == "daman-and-diu"
-replace dise_state = "jammu & kashmir" if dise_state == "jammu-and-kashmir"
-replace dise_state = "jammu & kashmir" if dise_state == "jammu-&-kashmir"
-
-/* edit district names */
-
-replace district = "aurangabad" if district == "aurangabad (maharashtra)"
-
-foreach var in east west south north {
-  replace district = "`var'" if district == "`var' delhi"
-  replace district = "`var'" if district == "`var' sikkim"
-}
-
-/* drop collective  NE states entry*/
-drop if dise_state == "north-eastern-states"
-
-/* rename key variables */
-ren dise_block_name pc01_block_name
-ren district pc01_district_name
-ren dise_state pc01_state_name
-
-/* add prefix to faciliy variables */
-foreach var in blackboard num_classrooms toilet_boys elec library ///
-     toilet_common toilet_girls wall playground water {
-  rename `var' facility_`var'
-}
-
-/* fix roman numerals  */
-replace pc01_block_name = regexr(pc01_block_name, "ii$", "2")
-
-/* collapse at state-disttrict-block level */
-collapse (sum) pass* m60* facility* enr*, by(year pc01_state_name pc01_district_name pc01_block_name)
-
-/* remove  leading and trailing spaces */
-replace pc01_block_name=strtrim(pc01_block_name)
-
-/* save dataset */
-save $tmp/dise_cleaned.dta, replace
-
-********************************
-*** MERGE WITH DISE-PC01 KEY ***
-********************************
-
-/* use dise all dataset */
-use $tmp/dise_cleaned.dta, replace
-
-/*remove spaces */
-replace pc01_block_name=strtrim(pc01_block_name)
-
-/*merge with dise-pc01 key */
-merge m:1 pc01_state_name pc01_district_name pc01_block_name using $tmp/dise_pc01_key
+/* merge with DISE-PC01 key */
+merge m:1 dise_state district dise_block_name using $ebb/pc01_dise_key
 
 /* keep matches */
 keep if _merge == 3
@@ -77,15 +14,65 @@ keep if _merge == 3
 /* drop merge variable*/
 drop _merge
 
-/* merge EBB data */
-merge m:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/kgbvs_list_clean
+/* add prefix to faciliy variables for collapse */
+foreach var in blackboard num_classrooms toilet_boys elec library ///
+     toilet_common toilet_girls wall playground water {
+  rename `var' facility_`var'
+}
+
+/* collapse at block level */
+collapse (sum) pass* m60* facility* enr*, by(year ///
+    pc01_state_id pc01_district_id pc01_block_id pc01_state_name pc01_district_name pc01_block_name)
+
+/* merge EBB-NPEGEL-KGBV data */
+merge m:1 pc01_state_id pc01_district_id pc01_block_id using $ebb/treated_list_clean
 
 /* drop unmatched obs */
-keep if _merge==3
+keep if _merge == 3
 
 /* drop merge variable  */
 drop _merge
 
 /* save dataset */
-save $tmp/dise_pc01_ebb, replace
 save $iec/flfp/dise_pc01_ebb, replace
+
+*******************************************
+*** MAKE THE DATASET READY FOR ANALYSIS ***
+*******************************************
+
+/* gen numeric year var */
+gen year1 = substr(year, 1, 4)
+drop year
+rename year1 year
+destring year, replace
+
+/* drop obs from 2001 */
+drop if year == 2001
+
+/* gen combined enr vars */
+gen enr_all_g = enr_all_g1 + enr_all_g2 + enr_all_g3 + enr_all_g4 + enr_all_g5 + enr_all_g6 + enr_all_g7 + enr_all_g8
+gen enr_all_b = enr_all_b1 + enr_all_b2 + enr_all_b3 + enr_all_b4 + enr_all_b5 + enr_all_b6 + enr_all_b7 + enr_all_b8
+gen enr_all_mid_g = enr_all_g6 + enr_all_g7 + enr_all_g8
+gen enr_all_mid_b = enr_all_b6 + enr_all_b7 + enr_all_b8
+
+/* gen log */
+gen ln_enr_all_mid_b = ln(enr_all_mid_b + 1)
+gen ln_enr_all_mid_g = ln(enr_all_mid_g + 1)
+
+/* normalize running variable */
+replace pc01_pca_f_lit_rate = pc01_pca_f_lit_rate - 0.4613
+replace pc01_pca_lit_gender_gap = pc01_pca_lit_gender_gap - 0.2159
+
+/* create a treatment variable for the RD */
+gen treatment_lit = pc01_pca_f_lit_rate < 0
+gen treatment_gap = pc01_pca_lit_gender_gap < 0
+
+/* create a right side slope for the RD estimation */
+gen lit_right = pc01_pca_f_lit_rate * treatment_lit
+gen gap_right = pc01_pca_lit_gender_gap * treatment_gap
+
+/* sort by state district block year */
+sort pc01_state_id pc01_district_id pc01_block_id year
+
+/* save dataset */
+save $iec/flfp/dise_ebb_analysis

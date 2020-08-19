@@ -23,6 +23,12 @@ keep if _merge == 3
 
 drop _merge
 
+/* merge with sc enrolmentt data */
+merge m:1 dise_state year vilcd schcd using $iec/dise/dise_enr_sc
+keep if _merge == 3
+drop _merge
+
+/* save dataset */
 save $tmp/dise_0, replace
 
 ****************************************
