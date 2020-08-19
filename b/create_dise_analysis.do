@@ -40,5 +40,9 @@ gen gap_right = pc01_pca_lit_gender_gap * treatment_gap
 /* sort by state district block year */
 sort pc01_state_id pc01_district_id pc01_block_id year
 
+/* create state and district fixed effects */
+group pc01_state_id
+group pc01_state_id pc01_district_id
+
 /* save dataset */
 save $iec/flfp/dise_ebb_analysis
