@@ -41,7 +41,7 @@ save $tmp/findkgbvs, replace
 use $tmp/findkgbvs, clear
 
 /* use only the most recent data */
-keep if year == "2005-2006"
+keep if year == "2015-2016"
 
 /* generate variable that indicates where in school names the KGBV indicator appears */
 gen kgbv_pos = strpos(school_name, "KGBV")
@@ -115,12 +115,21 @@ replace kgbv_pos=strpos(school_name, "PROJECT") if kgbv_pos==0 & dise_state == "
 /* replace misidentifications of private schools */
 replace kgbv_pos = 0 if schmgt == 5
 
-/* check identified KGBVs */
-tab dise_state if kgbv_pos > 0
+/* keep ID's KGBVs */
+keep dise_state vilcd schcd kgbv_pos
 
-/* find additional KGBV indicators */
-list school_name if kgbv_pos == 0 & strpos(school_name, "KAST") > 0 ///
-    & schmgt != 4 & schmgt != 5
+/* merge with original dataset */
+merge 1:m dise_state vilcd schcd using $tmp/findkgbvs
+
+/* generate identifiers in blocks with KGBVs */
+gen kgbv_enr_g_up = enr_all_up_g if kgbv_pos > 0
+
+/* collapse to block level */
+collapse (sum) kgbv_enr_g_up enr_all_up_g, by(dise_state district dise_block_name)
+
+/* generate KGBV enrollment share */
+keep if kgbv_enr_g_up > 0
+gen kgbv_enr_share = kgbv_enr_g_up / enr_all_up_g
 
 /*******************************/
 /* Further Explore Some States */
