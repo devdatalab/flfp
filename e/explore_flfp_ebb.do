@@ -60,7 +60,7 @@ graphout `var'
 
 foreach var in emp_f count_f emp_f_owner {
   foreach y in 1998 2005 2013 {
-    quireg ln_`var' treatment_lit pc01_pca_f_lit_rate lit_right if year == `y' ///
+    quireg ln_`var' treatment_lit pc01_pca_f_lit_rate lit_right popp if year == `y' ///
     & inrange(pc01_pca_f_lit_rate, -0.1, 0.1), cluster(sdgroup) title(`var' in `y') absorb(sgroup)
 }
 }
@@ -69,7 +69,7 @@ foreach var in emp_f count_f emp_f_owner {
 
 foreach var in emp_f count_f emp_f_owner {
   foreach y in 1998 2005 2013 {
-    quireg ln_`var' treatment_lit  pc01_pca_f_lit_rate lit_right if year == `y' ///
+    quireg ln_`var' treatment_lit  pc01_pca_f_lit_rate lit_right popp if year == `y' ///
         & inrange(pc01_pca_f_lit_rate, -0.1, 0.1) & all_years == 4 & non_ml == 0 ///
         , cluster(sdgroup) title(`var' in `y') absorb(sgroup)
 }

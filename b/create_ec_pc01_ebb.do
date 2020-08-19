@@ -41,6 +41,26 @@ save $tmp/pc01_01_cleaned_2, replace
 /* use EC all years dataset */
 use $iec/flfp/ec_flfp_all_years, clear
 
+/* add population data */
+foreach x in 91 01 11 {
+  merge m:1 shrid using $iec/flfp/shrug_pc`x'_pca, keepusing(pc*pca*tot_*)
+  drop if _merge == 2
+  drop _merge
+}
+
+/* generate pop (total, male and female) long variable */
+foreach x in m f p {
+
+  /* interpolate 1998 population based on 91 and 01 */
+  gen     pop`x' = pc91_pca_tot_`x' * (pc01_pca_tot_`x' / pc91_pca_tot_`x') ^ (7/10) if year == 1998
+  
+  /* interpolate 2005 population based on 01 and 11 */
+  replace pop`x' = pc01_pca_tot_`x' * (pc11_pca_tot_`x' / pc01_pca_tot_`x') ^ (4/10) if year == 2005
+
+  replace pop`x' = pc11_pca_tot_`x' if year == 2013
+  replace pop`x' = pc91_pca_tot_`x' if year == 1990
+}
+
 /* drop duplicates */
 sort year shric shrid
 quietly by year shric shrid: gen dup = cond(_N==1,0,_n)
@@ -84,7 +104,7 @@ save $tmp/pc_ec_block, replace
 use $tmp/pc_ec_block, clear
 
 /* collapse at year-block level */
-collapse (sum) emp* count*, by (year pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
+collapse (sum) emp* count* (mean) pop*, by (year pc01_state_id pc01_state_name pc01_district_id pc01_district_name ///
     pc01_block_id pc01_block_name)
 
 /* save dataset */
