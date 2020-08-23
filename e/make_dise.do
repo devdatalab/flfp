@@ -24,4 +24,15 @@ do $flfp_code/b/create_dise_analysis.do
 do $flfp_code/b/create_ec_pc01_ebb.do
 
 
+/************/
+/* ANALYSIS */
+/************/
 
+/* replicate all M&L results */
+do $flfp_code/e/replicate_meller_figures.do
+
+/* runs all dise enrollment analyses */
+do $flfp_code/e/describe_dise_new.do
+
+/* runs all FLFP related analyses */
+do $flfp_code/e/explore_flfp_ebb.do
