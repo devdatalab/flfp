@@ -104,11 +104,6 @@ foreach state in $statelist {
   /* at least middle */
   replace secc11_middle = 1 if ed > 3
 
-  /* generate marital dummy  */
-  gen secc11_married = .
-  replace secc11_married = 0 if marital == 1
-  replace secc11_married = 1 if inlist(marital, 2, 3, 4, 5)
-
   /* generate sex-based educational attainment variables */
   foreach var of varlist secc11* {
     gen `var'_m = `var' if sex == 1
@@ -116,7 +111,7 @@ foreach state in $statelist {
   }
 
   /* drop intermediate variables */
-  drop secc11_educ_years secc11_lit secc11_primary secc11_middle secc11_married
+  drop secc11_educ_years secc11_lit secc11_primary secc11_middle
 
   /* generate ST/SC educational attainment variables */
   foreach var of varlist secc11* {
