@@ -180,3 +180,88 @@ tab schtype if kgbv_dummy == 1
 tab schcat if kgbv_dummy == 1
 summ enr_all_b if kgbv_dummy == 1, detail
 summ enr_all_g if kgbv_dummy == 1, detail
+
+
+/****************************************/
+/* Explore Accuracy of Year Established */
+/****************************************/
+
+/* use post-algorithm dataset */
+use $tmp/kgbv_ids, clear
+
+/* drop non-KGBVs */
+drop if kgbv_pos == 0
+
+replace year = substr(year, 1, 4)
+destring year, replace
+
+sort schcd year
+
+by schcd: gen is_estdyear_changing = year_established - year_established[_n-1]
+
+replace is_estdyear_changing =0 if is_estdyear_changing == .
+
+drop if is_estdyear_changing ! = 0
+
+sort schcd year
+
+by schcd: gen diff = year_established[1] != year_established[_N]
+
+/***********************************/
+/* Generate KGBV Enrollment Shares */
+/***********************************/
+
+/* open SC/ST DISE dataset */
+use /scratch/pgupta/dise_enr_sc_school.dta, clear
+
+/* clean year variable to allow merge */
+forvalues year = 1/4 {
+  drop if year == "`year'"
+}
+
+replace year = "2005-2006" if year == "5"
+replace year = "2006-2007" if year == "6"
+replace year = "2007-2008" if year == "7"
+replace year = "2008-2009" if year == "8"
+replace year = "2009-2010" if year == "9"
+replace year = "2010-2011" if year == "10"
+replace year = "2011-2012" if year == "11"
+replace year = "2012-2013" if year == "12"
+
+/* merge with SC/ST enrollment dataset */
+merge 1:m dise_state year vilcd schcd using $tmp/kgbv_ids
+
+/* save as temporary dataset */
+save $tmp/kgbv_sc_ids, replace
+
+/* generate KGBV enrollment variable */
+gen kgbv_enr_sc = 0
+replace kgbv_enr_sc = enr_sigc if kgbv_pos > 0
+gen kgbv_enr_st = 0
+replace kgbv_enr_st = enr_sigt if kgbv_pos > 0
+
+/* collapse to the block level */
+collapse (sum) kgbv_enr_sc kgbv_enr_st enr_sigc enr_sigt kgbv_pos, ///
+    by(dise_block_name district dise_state year)
+
+/* keep only blocks with a KGBV */
+keep if kgbv_pos > 0
+
+/* generate KGBV enrollment share variables */
+gen kgbv_sc_share = kgbv_enr_sc / enr_sigc
+gen kgbv_st_share = kgbv_enr_st / enr_sigt
+
+/* collapse to year level */
+collapse (mean) kgbv_sc_share kgbv_st_share, by(year)
+
+/* clean year variable, and restrict sample to only years with SC/ST data */
+replace year = substr(year, 1, 4)
+destring year, replace
+keep if year < 2013
+
+/* graph KGBV enrollment shares */
+graph twoway scatter kgbv_sc_share year, title(KGBV Share of SC Enrollment)
+graphout kgbv_sc
+
+graph twoway scatter kgbv_st_share year, title(KGBV Share of ST Enrollment)
+graphout kgbv_st
