@@ -199,13 +199,9 @@ sort schcd year
 
 by schcd: gen is_estdyear_changing = year_established - year_established[_n-1]
 
-replace is_estdyear_changing =0 if is_estdyear_changing == .
+replace is_estdyear_changing = 0 if mi(is_estdyear_changing)
 
-drop if is_estdyear_changing ! = 0
-
-sort schcd year
-
-by schcd: gen diff = year_established[1] != year_established[_N]
+drop if is_estdyear_changing != 0
 
 /***********************************/
 /* Generate KGBV Enrollment Shares */
