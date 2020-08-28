@@ -58,6 +58,9 @@ do $flfp_code/e/describe_dise_new.do
 /* runs all FLFP related analyses */
 do $flfp_code/e/explore_flfp_ebb.do
 
+/* try to identify KGBVs by DISE names (rather than external lists) */
+do $flfp_code/e/find_dise_kgbvs.do
+
 /* EXPLORE SECC */
 
 /* explores marriage rates */
