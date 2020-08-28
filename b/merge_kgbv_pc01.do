@@ -144,23 +144,8 @@ use $ebb/ebbs_list_clean, clear
 
 /* merge with the clean merge between PC01 and EBBs */
 masala_merge pc01_state_name pc01_district_name using $ebb/kgbvs, ///
-    s1(pc01_block_name) idmaster(id) idusing(id)
-
-/* process matches manually entered in CSV viewer */
-process_manual_matches, outfile($tmp/kgbv_manual3.csv) ///
-    infile(/scratch/plindsay/unmatched_observations_101685.csv) ///
-    s1(pc01_block_name) idmaster(id_master) idusing(id_using)
-
-/* open merge results */
-use /scratch/plindsay/merge_results_101685, clear
-
-/* insert manually processed matches into master dataset */
-insert_manual_matches, manual_file($tmp/kgbv_manual3.csv) ///
-    idmaster(id_master) idusing(id_using)
-
-/*********************/
-/* Clean New Dataset */
-/*********************/
+    s1(pc01_block_name) idmaster(id) idusing(id) ///
+    manual_file(~/ddl/flfp/b/manual_matches/manual_kgbv_pc01.csv)
 
 /* make master block names the key block name variable */
 ren pc01_block_name_master pc01_block_name

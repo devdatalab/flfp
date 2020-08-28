@@ -222,19 +222,8 @@ use $tmp/district_level_match, clear
 
 /* masala merge with block names from pc01 */
 masala_merge pc01_state_name pc01_district_name ///
-    using $tmp/pc01_blocks, s1(pc01_block_name) idmaster(id) idusing(id)
-
-/* process manual matches */
-process_manual_matches, outfile($tmp/dise_pc01_manual_match.csv) ///
-    infile(/scratch/plindsay/unmatched_observations_85363.csv) ///
-    s1(pc01_block_name) idmaster(id_master) idusing(id_using)
-
-/* use match dataset */
-use $tmp/merge_results_85363, clear
-
-/* insert manual matches */
-insert_manual_matches, manual_file($tmp/manual_dise) ///
-    idmaster(id_master) idusing(id_using)
+    using $tmp/pc01_blocks, s1(pc01_block_name) idmaster(id) idusing(id) ///
+    manual_file(~/ddl/flfp/b/manual_matches/manual_dise_pc01.csv)
 
 /* drop if unmatched */
 drop if match_source == 6 | match_source == 7
