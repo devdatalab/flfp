@@ -7,7 +7,7 @@
 global statelist andamannicobarislands andhrapradesh arunachalpradesh assam bihar chandigarh chhattisgarh dadranagarhaveli damananddiu goa gujarat haryana himachalpradesh jammukashmir jharkhand karnataka madhyapradesh maharashtra manipur meghalaya mizoram nagaland nctofdelhi odisha puducherry punjab rajasthan sikkim tamilnadu telangana tripura uttarakhand uttarpradesh westbengal
 
   /* cycle through rural and urban */
-  foreach sector in urban{
+  foreach sector in rural{
 
   /* save empty dataset */
   clear
@@ -25,7 +25,9 @@ global statelist andamannicobarislands andhrapradesh arunachalpradesh assam biha
     if "`sector'" == "rural" {
       local l = "r"
       local path $secc/final/dta
-    }
+      local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_village_id mord_hh_id
+      local memberid `hhid' mord_member_id
+  }
     
     /* cycle through each state */
     foreach state in $statelist {
