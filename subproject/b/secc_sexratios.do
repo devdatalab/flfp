@@ -285,29 +285,21 @@ use $tmp/secc_sexratios_age_district, clear
 order pc*id sr_*t*
 
 /* save as temp dataset for use later */
-save $tmp/sexratio_secc_total
-
-/* get coordinates */
-merge m:1 pc11_state_id pc11_district_id  using $iec1/pc11/geo/town_coords_clean, nogen keep(match)
-
-/* collapse to district level to create maps */
-collapse_save_labels
-collapse (mean) *sex*, by(pc11_state_id pc11_district_id)
-collapse_apply_labels
+save $tmp/sexratio_secc_total, replace
 
 /* categorize data to standardize legend */
-foreach x of var pc*sex* {
+foreach x of var sr_* {
   replace `x' = . if `x' > 1500
   gen c_`x' = .
-  replace c_`x' = 500 if inrange(`x', 1, 500)
-  replace c_`x' = 800 if inrange(`x', 501, 800)
-  replace c_`x' = 900 if inrange(`x', 801, 1000)
-  replace c_`x' = 1000 if `x' > 1000 & !mi(`x')
+  replace c_`x' = 600 if inrange(`x', 1, 600)
+  replace c_`x' = 900 if inrange(`x', 601, 900)
+  replace c_`x' = 1000 if inrange(`x', 901, 1000)
+  replace c_`x' = 1001 if `x' > 1000 & !mi(`x')
   replace c_`x' = . if `x' == .
   }
 
 /* define scale */
-label define sr 500 "0-500" 800 "501-800" 900 "801-1000"  1000 ">1000" 
+label define sr 600 "0-600" 900 "601-900" 1000 "901-1000"  1001 ">1000" , modify
 label values c_* sr
 
 /* save data */
@@ -316,16 +308,55 @@ save $tmp/sr_dataset, replace
 /* create maps */
 
 /* convert shape file to dta format */
-shp2dta using "~/iec1/gis/pc11/pc11-district.shp", database("$tmp/base_db") coordinates("$tmp/dist_coord") genid(geoid) replace
+shp2dta using "~/iec1/gis/pc11/pc11-district.shp", database("$tmp/age_db") coordinates("$tmp/district_coord") genid(geoid) replace
 
 /* merge coordinates with dataset with sex ratios */
-use $tmp/base_db, clear
+use $tmp/age_db, clear
 
 /* rename variables for merge */
 ren pc11_s_id pc11_state_id
 ren pc11_d_id pc11_district_id
-//ren pc11_sd_id pc11_subdistrict_id
-//ren pc11_v_id pc11_town_id 
 
 /* bring in sex ratios */
-merge 1:1 pc11_state_id pc11_district_id using $tmp/secc_sexratios_age_district, nogen keep(match)
+merge 1:1 pc11_state_id pc11_district_id using $tmp/sr_dataset, nogen keep(match)
+
+/*******************/
+/* MAPS START HERE */
+/*******************/
+
+/* total maps */
+forval i = 15(5)85{
+
+  /* set local for title */
+  local j = `i' + 5
+
+  /* create map */  
+  spmap c_sr_age_`i'_t using $tmp/district_coord, id(geoid) fcolor(RdYlGn) ndfcolor(white) title("District-level sex ratio - `i'-`j' years", size(small))  clmethod(unique)
+  graphout total_`i'_`j'
+
+}
+
+/* urban maps */
+forval i = 0(5)85{
+
+  /* set local for title */
+  local j = `i' + 5
+
+  /* create map */  
+  spmap c_sr_age_`i'_u using $tmp/district_coord, id(geoid) fcolor(RdYlGn) ndfcolor(white) title("District-level sex ratio (urban) - `i'-`j' years", size(small))  clmethod(unique)
+  graphout u_`i'_`j'
+
+}
+
+/* rural maps */
+forval i = 0(5)85{
+
+  /* set local for title */
+  local j = `i' + 5
+
+  /* create map */  
+  spmap c_sr_age_`i'_r using $tmp/district_coord, id(geoid) fcolor(RdYlGn) ndfcolor(white) title("District-level sex ratio (rural) - `i'-`j' years", size(small))  clmethod(unique)
+  graphout r_`i'_`j'
+
+}
+
