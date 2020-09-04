@@ -21,9 +21,6 @@ foreach state in $statelist1 {
   /* open household dataset */
   use $secc/final/dta/`state'_household_clean, clear
 
-  /* drop duplicates so it's unique on household ID */
-  drop if flag_duplicates == 1
-
   /* merge with members dataset (household data was necessary for PC01 IDs) */
   merge 1:m  mord_hh_id using $secc/final/dta/`state'_members_clean
 
