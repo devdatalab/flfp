@@ -25,7 +25,7 @@ gen thirdoldest = 1 if birthorder == counter & youngest != 1
 replace counter = counter - 1
 gen fourtholdest = 1 if birthorder == counter & youngest != 1
 drop counter
-
+stop
 /*************************************************************************/
 /* Check if average diff between siblings varies by gender of first born */
 /*************************************************************************/
@@ -60,8 +60,6 @@ graphout diff_1
 /* Check sex ratios of younger siblings conditional on gender of older siblings */
 /********************************************************************************/
 
-set scheme pn
-
 /* outcome vars */
 gen f = sex == 2 
 gen m = sex == 1 
@@ -83,6 +81,8 @@ bys `hhid': egen boys = total(m)
 /* 2 person families */
 /*********************/
 
+set scheme s1color
+
 /* categories - eldest is a girl or a boy*/
 gen girl = 1 if highestorder == 2 & sex == 2 & oldest == 1
 replace girl = 2 if highestorder == 2 & sex == 1 & oldest == 1
@@ -98,10 +98,26 @@ label define g 1 "Girl" 2 "Boy", modify
 label values girl g
 
 /* probability of the youngest being a boy by sex of older sibling */
-cibar m if youngest == 1, over(girl) graphopts(ytitle("Likelihood of being a boy") xtitle("Sex of older sibling"))
-graphout trial
+cibar m if youngest == 1, over(girl) graphopts(ytitle("Likelihood of being a boy", margin(medium)) xtitle("Sex of older sibling") ylabel(0 (0.2) 1))
+graphout twoperson
 
-/* Becky: do you have ideas on what exactly to plot to replicate the bar graph in the paper you sent me? */
-/* I got stuck thinking through it I'm sure it'll come if I think harder/with a fresh mind */
+/*********************/
+/* 3 person families */
+/*********************/
 
+/* categories - eldest two are both girls */
+gen girl1 = 1 if highestorder == 3 & sex == 2 & oldest == 1
+replace girl1 = 1 if highestorder == 3 & sex == 2 & secondoldest == 1
+
+bys `hhid': egen flag1 = total(girl1)
+
+replace girl1 = 1 if flag1 == 2 & girl1 == .
+replace girl1 = 2 if girl1 == . & highestorder == 3
+
+label define g1 1 "Girl-Girl" 2 "Mixed/Boy-Boy", modify
+label values girl1 g1
+
+/* probability of the youngest being a boy by sex of older sibling */
+cibar m if youngest == 1, over(girl1) graphopts(ytitle("Likelihood of being a boy", margin(medium)) xtitle("Sex of older siblings") ylabel(0 (0.2) 1))
+graphout threeperson
 
