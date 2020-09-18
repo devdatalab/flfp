@@ -4,7 +4,7 @@ foreach level in district subdistrict {
   if "`level'" == "subdistrict" local ids pc11_state_id pc11_district_id pc11_subdistrict_id 
 
   /* bring in pc01 sex ratio dataset */
-  use $tmp/sexratio_townnames, clear
+  use $tmp/pc_sexratios, clear
 
   /* keep necessary vars */
   keep pc11*id pc11*name pc11*td*2011

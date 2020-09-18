@@ -10,9 +10,11 @@ global tmp /scratch/adibmk/
 // if "`sector'" == "rural" local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_village_id mord_hh_id
   //
 
-use $tmp/urban_birthorder, clear
-
-local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_block_id  pc11_ward_id pc11_town_id house_no
+//use $tmp/urban_birthorder, clear
+use $tmp/rural_birthorder, clear
+  
+//local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_block_id  pc11_ward_id pc11_town_id house_no
+local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_village_id mord_hh_id
   
 /* keep only children to make dataset smaller */
 keep if age <= 18
@@ -45,7 +47,9 @@ drop counter
 /*************************************************************************/
 /* Check if average diff between siblings varies by gender of first born */
 /*************************************************************************/
-local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_block_id  pc11_ward_id pc11_town_id house_no 
+//local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_block_id  pc11_ward_id pc11_town_id house_no 
+local hhid pc11_state_id pc11_district_id pc11_subdistrict_id pc11_village_id house_no 
+
 /* drop difference for oldest child */
 replace diff = . if oldest == 1
 

@@ -1,0 +1,261 @@
+\documentclass[aspectratio=169]{beamer}
+\newtheorem{proposition}{Proposition}
+% \usepackage{appendixnumberbeamer}
+
+%%% FIX ME:
+
+
+\newcommand{\backupbegin}{                     %%
+  \newcounter{finalframe}                      %%
+  \setcounter{finalframe}{\value{framenumber}} %%
+}                                              %%
+%% 
+\newcommand{\backupend}{                        %%
+  \setcounter{framenumber}{\value{finalframe}} %%
+}                                            %%
+
+
+\setbeamertemplate{navigation symbols}{}
+\newcommand*\oldmacro{}%
+\let\oldmacro\insertshorttitle%
+\renewcommand*\insertshorttitle{%
+  \oldmacro\hfill%
+  \insertframenumber\,/\,\inserttotalframenumber}
+\usepackage{graphicx,hyperref}
+\usepackage{epstopdf}
+\usepackage{booktabs,calc}
+\usepackage{ulem}
+\usepackage{color,colortbl}
+\usepackage{tikz}
+\usepackage[utf8]{inputenc}
+\usepackage{adjustbox}
+\renewcommand{\labelitemii}{$\cdot$}
+\renewcommand{\labelitemiii}{$\diamond$}
+\renewcommand{\labelitemiv}{$\ast$}
+
+%% SET LOCAL PATHS
+\newcommand{\HOME}{\string~}
+
+%% DON'T ADD NEW FILEPATH LINES -- CHANGE ~/include.tex INSTEAD
+\input{\HOME/include.tex}
+
+% define empty macro to control post regression table output
+\newcommand{\postregsize}{}
+
+% modify caption a little
+\setbeamertemplate{caption}[numbered]
+\setbeamerfont{caption}{size=\tiny}
+
+\title[Sex ratios in India]{Preliminary work on sex ratios}
+\author{DDL Internal} \institute[]{}{\normalsize
+  \textcolor{gray}{}}
+
+\date{September 2020}
+
+\AtBeginSection[]{
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{frame}
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+}
+\addtobeamertemplate{navigation symbols}{}{ 
+  \usebeamerfont{footline}%
+  \usebeamercolor[fg]{footline}
+  \hspace{1em}
+  \insertframenumber/\inserttotalframenumber
+}
+\newenvironment{changemargin}[2]{% 
+  \begin{list}{}{% 
+      \setlength{\topsep}{#1}% 
+      \setlength{\leftmargin}{#2}% 
+      \setlength{\rightmargin}{12pt}% 
+      \setlength{\listparindent}{\parindent}% 
+      \setlength{\itemindent}{\parindent}% 
+      \setlength{\parsep}{\parskip}% 
+    }% 
+  \item[]}{\end{list}} 
+
+\begin{document}
+
+\frame{\titlepage}
+\end{frame}
+
+\begin{section}{Data}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Raw Data}
+\begin{table}[]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lll}
+\hline
+&&\\
+\textbf{Dataset} & \textbf{Contents} & \textbf{Limitation} \\
+&&\\\hline
+&& \\
+Population Census & 1. PC 2011 Town directory has sex ratio & 1. Only covers urban areas. \\
+ & for each town in 2011, 2000, 1991. &  \\ 
+ & 2. PC 2000 has sex ratio for each town in 2000, 1991, and '81. & 2. Data is not available by age groups. \\
+&&\\
+\hline
+&& \\
+SECC & Household survey data with age and sex details & 1. Only available for 2012.\\
+ & for each member, among other things. & 2. Coverage not as extensive as PC\\ 
+ &  & (confirm this from Sam/Paul).\\ \bottomrule
+\end{tabular}%
+}
+\end{table}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Clean Data}
+  \begin{itemize}
+    \item \textbf{PC sex ratios}: District\-wise sex ratios (urban areas only)
+      in 2011, 2000, 1991, 1981 have been consolidated in
+      \textcolor{blue}{/scratch/adibmk/pc\_sexratios}.  Note that the sex ratios for
+      2011, 2000 and 1991 were pulled from PC11 town directory, and
+      that for 1981 was pulled from PC01 town directory.
+     \item \textbf{SECC district sex ratios by age group}: Currently saved in scratch folders of Aditi and Becky as \textcolor{blue}{secc\_sexratios\_age\_district}.
+     \item \textbf{SECC sub\-district sex ratios by age group}: Currently saved in scratch folders of Aditi and Becky as \textcolor{blue}{secc\_sexratios\_age\_subdistrict}.
+     \item \textbf{SECC birth order}: A dataset with birth order of each
+       “child” (defined as age \<\= 18) in SECC households and age
+       difference between each “child” has been saved separately for
+       urban and rural areas as \textcolor{blue}{/scratch/adibmk/urban\_birthorder}, and
+       \textcolor{blue}{/scratch/adibmk/rural\_birthorder} respectively.
+     \item All the do files to create the clean datasets are currently sitting in \textcolor{blue}{flfp/subproject/b}
+     \end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{section}
+\begin{section}{Descriptive statistics}
+  \begin{frame}{Validate SECC and PC sex ratio district data}
+    \small{We used PC \emph{2011} data only as the SECC data is from 2012. We
+    have also only used SECC \emph{urban} data as sex ratios are only
+    available in PC town directories.}
+    \centering
+    \resizebox{0.8\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/secc_pc11_district}
+    \end{figure}
+    }
+  \end{frame}
+  \begin{frame}{Validate SECC and PC sex ratio subdistrict data}
+    \centering
+    \resizebox{0.8\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/secc_pc11_subdistrict}
+    \end{figure}
+    }
+  \end{frame}
+
+\begin{frame}{District level sex ratios in India across the four Census periods}
+  \centering
+    \resizebox{0.8\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/sexratio_1}
+    \end{figure}
+    }
+  \end{frame}
+\begin{frame}{District level sex ratios in India across the four Census periods}
+  \centering
+    \resizebox{0.8\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/sexratio_2}
+    \end{figure}
+    }
+\end{frame}
+
+\begin{frame}{Comparison with the literature}
+  \centering
+  The maps in the previous frames suggest that as of 1981, 1991, and
+  2001, sex ratios were substantially lower than the natural sex ratio
+  in North-West India compared to the rest of the country. This is in
+  line with the fingind by Gupta, Monica Das, et al. in “Son Preference,
+  Sex Ratios and ‘Missing Girls’ in Asia.” (Routledge Handbook of Asian
+  Demography, 2018), which reports that while sex ratios have
+  historically been more male-heavy in N India, sex selection is
+  becoming a bigger problem is NW India, especially wealthier areas in
+  Punjab and Haryana. See the figure on the next slide.
+\end{frame}
+
+\begin{frame}{Comparison with the literature}
+  \centering
+    \resizebox{0.6\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.6]{\pngpath/figure4}
+    \end{figure}
+    }
+\end{frame}
+\begin{frame}{Sex ratios are becoming male heavy over time in Indian
+    cities, possibly reflecting urbanization and masculine rural to
+    urban migration}
+\centering
+    \resizebox{0.8\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/sex_timeseries}
+    \end{figure}
+    }
+\end{frame}
+\begin{frame}{Sex ratios by 5 year age bins: Sample graphs}
+\centering
+    \resizebox{0.8\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/total_5_10}
+    \end{figure}
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/total_20_25}
+    \end{figure}
+    }
+\end{frame}
+\begin{frame}{Sex ratios by 5 year age bins: Sample graphs (Urban vs Rural)}
+\centering
+    \resizebox{0.8\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/u_15_20}
+    \end{figure}
+    \begin{figure}
+          \includegraphics[scale=0.8]{\pngpath/r_20_25}
+    \end{figure}
+    }
+\end{frame}
+\end{section}
+\begin{section}{Analysis}
+  \begin{frame}{Replicate Almond, Edlund (2008) finding of son-biased
+      sex ratios in the United States using SECC for the Indian
+      context. See reference graph from Almond, Edlund below: }
+  \centering
+    \resizebox{0.4\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.4]{\pngpath/reference}
+    \end{figure}
+    }
+  \end{frame}
+\begin{frame}{Replication in the Indian context using SECC
+    \emph{urban} data: Evidence of son preference!}
+  \centering
+    \resizebox{0.6\linewidth}{!}{
+    \begin{figure}
+          \includegraphics[scale=0.6]{\pngpath/replication}
+    \end{figure}
+    }
+  \end{frame}
+\end{section}
+\begin{section}{Next Steps}
+\begin{frame}{Next Steps}
+  \begin{itemize}
+    \item Repeat the replication in the last slide for SECC rural
+      areas to. The current graph only uses urban data.. because the
+      rural dataset is huge. Ideas on how to do this efficiently with
+      such a large dataset?
+    \item Discuss what next with team.
+    \item We have age-wise marriage data, enrollment data, and female
+      employment at the village and town level.. how can they be
+      combined with the SECC age wise sex ratios data to do something
+      meaningful?
+  \end{itemize}
+\end{frame}
+\end{section}
+\end{document}

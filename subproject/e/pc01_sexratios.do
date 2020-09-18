@@ -18,7 +18,7 @@ drop pc01*91 pc01*01
 order pc*id pc*sex*
 
 /* save as temp dataset for use later */
-save $tmp/sexratio_townnames
+save $tmp/pc_sexratios, replace
 
 /* get coordinates */
 merge m:1 pc11_state_id pc11_district_id pc11_subdistrict_id pc11_town_id using $iec1/pc11/geo/town_coords_clean, nogen keep(match)
@@ -91,7 +91,7 @@ graphout sexratio_2
 //
 
 /* create time series plots for cities */
-use $tmp/sexratio_townnames, clear
+use $tmp/pc_sexratios, clear
 
 /* drop towns with missing names */
 drop if mi(pc11_town_name)
@@ -130,7 +130,7 @@ keep if tag == 0
 reshape long sexratio, i(pc11_town_name) j(year)
 
 /* set scheme */
-set scheme s1color
+set scheme plottigblind
 
 /* convert town name into numeric variable */
 encode pc11_town_name, gen(id)
