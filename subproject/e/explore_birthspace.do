@@ -118,20 +118,11 @@ drop flag*
 
 set scheme pn
 
-///* oldest child under 18 */
+/* generate a group variable that indicates nth child.
+birth_group == 1 if firstborn (oldest), 2 is second-born, 3 is third-born*/
 gen birth_group = 4 - birthorder
-//replace birth_group = 1 if oldest == 1
-//
-///* second-oldest child under 18 */
-//replace birth_group = 2 if secondoldest == 1 & highestorder > 2
-////replace birth_group = 2 if youngest == 1 & highestorder == 2
-//
-///* third-oldest child under 18 */
-//replace birth_group = 3 if thirdoldest == 1 & highestorder > 3
-////replace birth_group = 3 if youngest == 1 & highestorder == 3
-//
-///* limit to 3-child families */
-//drop if birth_group == .
+
+/* limit to families with 1-3 kids */
 drop if highestorder > 3
 
 /* create var that indicates gender-composition of existing kids */
@@ -176,7 +167,6 @@ foreach i of var f m{
 
 /* gen outcome vars (gender) */
 
-
 /* gen sexratio by birth order and composition of previous children */
 replace birth_group = 0 if highestorder == 1
 replace prev_children = 0 if highestorder == 1
@@ -203,7 +193,7 @@ sort highestorder prev_children
 list highestorder prev_children sr, sepby(highestorder)
 
 /* calculate standard error of the sex ratio */
-/* note: see this link for methods paper on SE or SR:
+/* note: see this link for methods paper on SE of sex ratio:
 https://paa2008.princeton.edu/papers/80123*/
 bys highestorder prev_children: gen se_sr = (1 + sr) * ((sr / N) ^0.5)
 
@@ -211,7 +201,6 @@ bys highestorder prev_children: gen se_sr = (1 + sr) * ((sr / N) ^0.5)
 bys highestorder prev_children: gen sr_hi = sr + (1.96 * se_sr)
 bys highestorder prev_children: gen sr_lo = sr - (1.96 * se_sr)
 
-/* ADITI: ignore below for now  */
 /* create a variable that contains info on both birth group and prev_children */
 gen group_prev = prev_children if highestorder == 1
 replace group_prev = prev_children + 1 if highestorder == 2
@@ -219,9 +208,6 @@ replace group_prev = prev_children + 2 if highestorder == 3
 
 sort group_prev
 list group_prev birth_group prev_children, sepby(birth_group)
-
-/* set global so graphs will go to my output */
-global tmp /scratch/bcai/
 
 /* graph replication of Almond and Edlund */
 twoway (bar sr group_prev if highestorder == 1) ///
@@ -234,8 +220,85 @@ twoway (bar sr group_prev if highestorder == 1) ///
     yline(1.05, lcolor(red))
 graphout trial  
 
-
 graphout sr_birthorder, pdf
+
+
+/* replicate the birthorder sex ratio graphs for states w/ different gender norms */
+
+/* use the individual-level clean dataset */
+use $tmp/secc_birthorder_clean.dta, clear
+
+/* drop the sex ratio vars to recalculate */
+drop  males females sr N
+
+/* create indicators for 4 southern states and 4 NW states */
+
+/* southern 4 states are kerala, TM, karnakata, and andhra pradesh */
+gen region = .
+replace region = 1 if inlist(pc11_state_id, "32", "33", "29", "28") == 1
+
+/* NW 4 states are rajasthan, haryana, punjab, and uttaranchal */
+replace region = 2 if inlist(pc11_state_id, "08", "03", "06", "05")
+
+/* drop if not in a state of interest */
+drop if region == .
+
+/* generate totals of male and female, and sex ratio */
+bys region highestorder prev_children birthorder: egen males = total(m)
+bys region highestorder prev_children birthorder: egen females = total(f)
+bys region highestorder prev_children birthorder: gen sr = males/females
+//bys highestorder prev_children birthorder: gen sr = females/males
+
+/* preserve Ns to calculate standard error of sex ratio */
+bys region highestorder prev_children birthorder: gen N = males + females
+
+/* collapse dataset to relevant variables */
+keep if inlist(youngest, 1, 99)
+keep region highestorder prev_children sr N
+duplicates drop
+
+/* check whether results are close to expected */
+sort region highestorder prev_children
+list region highestorder prev_children sr, sepby(highestorder)
+
+/* calculate standard error of the sex ratio */
+/* note: see this link for methods paper on SE of sex ratio:
+https://paa2008.princeton.edu/papers/80123*/
+bys region highestorder prev_children: gen se_sr = (1 + sr) * ((sr / N) ^0.5)
+
+/* define 95% confidence intervals */
+bys region highestorder prev_children: gen sr_hi = sr + (1.96 * se_sr)
+bys region highestorder prev_children: gen sr_lo = sr - (1.96 * se_sr)
+
+/* create a variable that contains info on both birth group and prev_children */
+gen group_prev = prev_children if highestorder == 1
+replace group_prev = prev_children + 1 if highestorder == 2
+replace group_prev = prev_children + 2 if highestorder == 3
+
+/* graph replication for southern states */
+twoway (bar sr group_prev if highestorder == 1 & region == 1, color(blue)) ///
+       (bar sr group_prev if highestorder == 2 & region == 1, color(red)) ///
+       (bar sr group_prev if highestorder == 3 & region == 1, color(green)) ///
+    (rcap sr_hi sr_lo group_prev if region == 1), ///
+    legend(order(1 "1st child" 2 "2nd child" 3 "3rd child" 4 "95% CI")) ///
+    xlabel(0 "n.a." 3 "Girl" 4 "Boy" 6"Girl, Girl" 7 "Boy, Boy" 8 "Mixed") ///
+    xtitle("Sex of previous children") ytitle("Sex Ratio (male/female)" ) ///
+    yline(1.05, lcolor(red)) ylabel(0(.5)3) ///
+    title("SR by birthorder: southern states") subtitle("Kerala, Tamil Nadu, Karnataka, Andhra Pradesh") ///
+    scheme(s1color)
+graphout sr_birthorder_s1
+
+/* graph replication for NW states */
+twoway (bar sr group_prev if highestorder == 1 & region == 2, color(blue)) /// 
+       (bar sr group_prev if highestorder == 2 & region == 2, color(red)) ///  
+       (bar sr group_prev if highestorder == 3 & region == 2, color(green)) ///
+    (rcap sr_hi sr_lo group_prev if region == 2), ///
+    legend(order(1 "1st child" 2 "2nd child" 3 "3rd child" 4 "95% CI")) ///
+    xlabel(0 "n.a." 3 "Girl" 4 "Boy" 6"Girl, Girl" 7 "Boy, Boy" 8 "Mixed") ///
+    xtitle("Sex of previous children") ytitle("Sex Ratio (male/female)" ) ///
+    yline(1.05, lcolor(red)) ylabel(0(.5)3) ///
+    title("SR by birthorder: NW states") subtitle("Rajasthan, Haryana, Punjab, Uttarakhand")
+graphout sr_birthorder_nw1
 
 
 /*********************/
