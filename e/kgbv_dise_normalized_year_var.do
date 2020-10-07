@@ -121,8 +121,6 @@ use $tmp/kgbv_ids, replace
 gen kgbv_enr_g_up = 0 if kgbv_pos == 0
 replace kgbv_enr_g_up = enr_all_up_g if kgbv_pos > 0
 
-/* collapse to school level */
-collapse (sum) enr* kgbv_enr_g_up, by(dise_state district dise_block_name schcd school_name year year_established)
 /* generate KGBV enrollment share */
 keep if kgbv_enr_g_up > 0
 
@@ -130,8 +128,17 @@ keep if kgbv_enr_g_up > 0
 replace year = substr(year, 1, 4)
 destring year, replace
 
+drop if year_established < 2000
 /* generate years since establishment variable */
 gen years_since_establishment = year - year_established
+gen kgbv_enr_share = kgbv_enr_g_up / enr_all_up
+
+histogram years_since_establishment
+graphout hist3
+
+collapse (mean) kgbv_enr_share kgbv_enr_g_up, by(years_since_establishment)
+graph twoway line kgbv_enr_g_up years_since_establishment
+graphout normalized
 
 /* save as temporary file */
 save $tmp/kgbv_enr_with_year, replace
