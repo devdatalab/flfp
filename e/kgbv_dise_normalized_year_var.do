@@ -121,24 +121,27 @@ use $tmp/kgbv_ids, replace
 gen kgbv_enr_g_up = 0 if kgbv_pos == 0
 replace kgbv_enr_g_up = enr_all_up_g if kgbv_pos > 0
 
-/* generate KGBV enrollment share */
-keep if kgbv_enr_g_up > 0
-
+gen non_kgbv_enr_g_up = enr_all_up_g if kgbv_pos == 0
 /* clean year variable */
 replace year = substr(year, 1, 4)
 destring year, replace
 
-drop if year_established < 2000
-/* generate years since establishment variable */
-gen years_since_establishment = year - year_established
-gen kgbv_enr_share = kgbv_enr_g_up / enr_all_up
-
-histogram years_since_establishment
-graphout hist3
-
-collapse (mean) kgbv_enr_share kgbv_enr_g_up, by(years_since_establishment)
-graph twoway line kgbv_enr_g_up years_since_establishment
-graphout normalized
+gen kgbv_introduced = year_established if kgbv_pos > 0
+replace kgbv_introduced = 10000 if kgbv_pos <= 0 
+drop if kgbv_introduced < 2004
 
 /* save as temporary file */
 save $tmp/kgbv_enr_with_year, replace
+
+
+use $tmp/kgbv_enr_with_year, replace
+
+collapse (sum) kgbv_enr_g_up non_kgbv_enr_g_up (min) kgbv_introduced, by (year dise_village_name)
+
+gen non_kgbv_village = 0
+replace non_kgbv_village = 1 if kgbv_enr_g_up == 0 | kgbv_introduced != 10000
+
+collapse (sum) kgbv_enr_g_up non_kgbv_enr_g_up, by (year non_kgbv_village kgbv_introduced)
+
+drop if kgbv_introduced != 10000 & non_kgbv_enr_g_up != 0
+
