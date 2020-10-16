@@ -139,9 +139,36 @@ use $tmp/kgbv_enr_with_year, replace
 collapse (sum) kgbv_enr_g_up non_kgbv_enr_g_up (min) kgbv_introduced, by (year dise_village_name)
 
 gen non_kgbv_village = 0
-replace non_kgbv_village = 1 if kgbv_enr_g_up == 0 | kgbv_introduced != 10000
+replace non_kgbv_village = 1 if kgbv_enr_g_up == 0 | kgbv_introduced == 10000
 
-collapse (sum) kgbv_enr_g_up non_kgbv_enr_g_up, by (year non_kgbv_village kgbv_introduced)
+drop if non_kgbv_village == 1 & kgbv_enr_g_up > 0
+drop if non_kgbv_village == 1 & kgbv_introduced != 10000
 
-drop if kgbv_introduced != 10000 & non_kgbv_enr_g_up != 0
+save $tmp/kgbv_pregraph, replace
 
+
+/* Graph Total Enrolment Numbers */
+
+use $tmp/kgbv_pregraph, clear
+
+collapse (sum) kgbv_enr_g_up non_kgbv_enr_g_up, by (year kgbv_introduced)
+
+graph twoway line kgbv_enr_g_up year if kgbv_introduced == 2009, name(kgbv_2009, replace) xline(2009) xtitle(Year) ytitle(Total KGBV Enrollment) title(Villages w/ KGBV introduced in 2009)
+graph twoway line non_kgbv_enr_g_up year if kgbv_introduced == 10000, name(non_kgbv_2009, replace) xline(2009) xtitle(Year) ytitle(Total Enrollment) title(Villages w/ no KGBVs)
+
+graph combine kgbv_2009 non_kgbv_2009, xcommon c(1)
+graphout enrollment_2009
+
+/* Graph Average Enrollment Numbers */
+
+use $tmp/kgbv_pregraph, clear
+
+collapse (mean) kgbv_enr_g_up non_kgbv_enr_g_up, by (year kgbv_introduced)
+
+forvalues i = 2009/2014 {
+  graph twoway (line kgbv_enr_g_up year if kgbv_introduced == `i') (line non_kgbv_enr_g_up year if kgbv_introduced == 10000), xtitle(Year) xline(`i') legend(label(1 "KGBV introduced in year") label(2 "Non-KGBV Villages" )) title(`i') name(average_enr_`i', replace) 
+  graphout combined_avg_enrollment_`i'
+}
+
+graph combine average_enr_2009 average_enr_2010 average_enr_2011 average_enr_2012 average_enr_2013 average_enr_2014, ycommon xcommon title(Average Village-Level Enrollment)
+graphout all_years
