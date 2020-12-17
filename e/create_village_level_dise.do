@@ -2,6 +2,8 @@
 
 *** TEST FILE ***
 
+***********************
+
 /* create DISE basic dataset with pc01 state/district/block */
 
 /* use basic DISE dataset */
@@ -25,9 +27,24 @@ merge m:1 dise_state district dise_block_name using $ebb/pc01_dise_key
 /* drop merge variable*/
 drop _merge
 
+
+/* collapse at village level */
+collapse (firstnm) y, by(pc01_block_id pc01_block_name pc01_district_id ///
+    pc01_district_name pc01_state_id pc01_state_name dise_village_name)
+
+
+/* gen id vars for masala merge */
+gen id = pc01_state_name +  pc01_district_name +  pc01_block_name + dise_village_name
+
+/* rename for masala merge */
+ren dise_village_name pc01_village_name
+
+tostring pc01_state_id pc01_block_id pc01_district_id, replace
+
 /* save dataset */
 save $tmp/village_1, replace
 
+************************
 
 /* add id to pc01 dataset */
 
@@ -52,7 +69,8 @@ drop dup
 /* save dataset */
 save $tmp/pc01_id, replace
 
-
+**********************
+/*
 /* merge dise-pc01 at village level */
 
 /* use DISE village level data */
@@ -71,6 +89,39 @@ gen id = pc01_state_name +  pc01_district_name +  pc01_block_name + dise_village
 /* rename for masala merge */
 ren dise_village_name pc01_village_name
 
+tostring pc01_state_id pc01_block_id pc01_district_id, replace
+
+save $tmp/village_2, replace
+*/
+
+*******************
+
+use $tmp/village_1_1, clear
+
+drop _merge
+
+keep if kgbvs_approved > 0
+
+keep if pc01_state_name == "chhattisgarh"
+
+tostring pc01_state_id pc01_district_id pc01_block_id, replace
+
+save $tmp/village_3, replace
+
+**********************
+
+use $tmp/pc01_id, clear
+
+keep if pc01_state_name == "chhattisgarh"
+
+save $tmp/pc01_id_2, replace
+
+**********************
+
+use $tmp/village_3, clear
+
 /* masala merge with pc01 village names*/
 masala_merge pc01_state_name pc01_district_name pc01_block_name ///
-    using $tmp/pc01_id, s1(pc01_village_name) idmaster(id) idusing(id)
+    using $tmp/pc01_id_2, s1(pc01_village_name) idmaster(id) idusing(id)
+
+save $tmp/village_dise, replace
