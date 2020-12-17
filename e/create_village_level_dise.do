@@ -70,31 +70,11 @@ drop dup
 save $tmp/pc01_id, replace
 
 **********************
-/*
-/* merge dise-pc01 at village level */
 
-/* use DISE village level data */
-use $tmp/village_1, clear
+/* create temp files to check data merge state-wise manually */
 
-/* gen var for collapse */
-gen x = 1
 
-/* collapse at village level */
-collapse (firstnm) x, by(pc01_block_id pc01_block_name pc01_district_id ///
-    pc01_district_name pc01_state_id pc01_state_name dise_village_name)
-
-/* gen id vars for masala merge */
-gen id = pc01_state_name +  pc01_district_name +  pc01_block_name + dise_village_name
-
-/* rename for masala merge */
-ren dise_village_name pc01_village_name
-
-tostring pc01_state_id pc01_block_id pc01_district_id, replace
-
-save $tmp/village_2, replace
-*/
-
-*******************
+**********************
 
 use $tmp/village_1_1, clear
 
