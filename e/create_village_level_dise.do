@@ -39,6 +39,12 @@ gen id = pc01_state_name +  pc01_district_name +  pc01_block_name + dise_village
 /* rename for masala merge */
 ren dise_village_name pc01_village_name
 
+/* add kgbv identification at block level */
+
+merge m:m pc01_state_id pc01_district_id pc01_block_id using $iec/flfp/dise_pc01_ebb, keepusing(kgbvs_app)
+
+drop _merge
+
 tostring pc01_state_id pc01_block_id pc01_district_id, replace
 
 /* save dataset */
@@ -76,7 +82,7 @@ save $tmp/pc01_id, replace
 
 **********************
 
-use $tmp/village_1_1, clear
+use $tmp/village_1, clear
 
 drop _merge
 
