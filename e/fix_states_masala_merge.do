@@ -55,8 +55,9 @@ use $tmp/pc01_id,clear
 keep if pc01_state_name == "haryana"
 
 replace id = subinstr(id,"-","",.)
-gen id0 = regexr(id,"[0-9]+","")
+replace id = regexr(id,"[0-9]+","")
 
+duplicates drop id, force
 save $tmp/pc01_id_haryana, replace
 
 /* Run Masala Merge on Haryana */
