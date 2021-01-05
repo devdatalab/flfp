@@ -51,7 +51,7 @@ foreach x of local states {
 /***********************/
 
 /* Drop dashes from village names */
-use $tmp/pc01_id,clear
+use $tmp/pc01_id, clear
 keep if pc01_state_name == "haryana"
 
 replace id = subinstr(id,"-","",.)
@@ -60,16 +60,14 @@ replace id = regexr(id,"[0-9]+","")
 duplicates drop id, force
 save $tmp/pc01_id_haryana, replace
 
+use $tmp/pc01_id_haryana, replace
 /* Run Masala Merge on Haryana */
 use $tmp/village_haryana, clear
 
-replace id = strlower(id)
-
-list id in 1/10 
 /* masala merge with pc01 village names*/
 masala_merge pc01_state_name pc01_district_name pc01_block_name ///
-  using $tmp/pc01_id_haryana, s1(pc01_village_name) idmaster(id) idusing(id0)
+  using $tmp/pc01_id_haryana, s1(pc01_village_name) idmaster(id) idusing(id)
 
-save $tmp/village_dise_haryana
+save $tmp/village_dise_haryana, replace
 
 
