@@ -75,39 +75,114 @@ drop dup
 /* save dataset */
 save $tmp/pc01_id, replace
 
-**********************
+/***********************************/
+/* create dise and pc01 state-by-state files*/
+***********************************/
+foreach state in assam bihar chhattisgarh gujarat haryana orissa rajasthan tripura jharkhand karnataka maharashtra meghalaya punjab {
+  use $tmp/village_1, clear
+  keep if kgbvs_approved > 0
+  keep if pc01_state_name == "`state'"
+  tostring pc01_state_id pc01_district_id pc01_block_id, replace
+  save $tmp/village_`state', replace
 
-/* create temp files to check data merge state-wise manually */
+  use $tmp/pc01_id, clear
+  keep if pc01_state_name == "`state'"
+  save $tmp/pc01_id_`state', replace
+}
 
+foreach state in andhra arunachal himachal madhya uttar {
+  use $tmp/village_1, clear
+  keep if kgbvs_approved > 0
+  keep if pc01_state_name == "`state' pradesh"
+  tostring pc01_state_id pc01_district_id pc01_block_id, replace
+  save $tmp/village_`state', replace
 
-**********************
+  use $tmp/pc01_id, clear
+  keep if pc01_state_name =="`state' pradesh"
+  save $tmp/pc01_id_`state', replace
+}
 
 use $tmp/village_1, clear
-
-drop _merge
-
 keep if kgbvs_approved > 0
-
-keep if pc01_state_name == "chhattisgarh"
-
+keep if pc01_state_name == "jammu kashmir"
 tostring pc01_state_id pc01_district_id pc01_block_id, replace
-
-save $tmp/village_3, replace
-
-**********************
+save $tmp/villlage_jammukashmir, replace
 
 use $tmp/pc01_id, clear
+keep if pc01_state_name == "jammu kashmir"
+save $tmp/pc01_id_jammukashmir, replace
 
-keep if pc01_state_name == "chhattisgarh"
+use $tmp/village_1, clear
+keep if kgbvs_approved > 0
+keep if pc01_state_name == "tamil nadu"
+tostring pc01_state_id pc01_district_id pc01_block_id, replace
+save $tmp/villlage_tamilnadu, replace
 
-save $tmp/pc01_id_2, replace
+use $tmp/pc01_id, clear
+keep if pc01_state_name == "tamil nadu"
+save $tmp/pc01_id_tamilnadu, replace
 
-**********************
+use $tmp/village_1, clear
+keep if kgbvs_approved > 0
+keep if pc01_state_name == "west bengal"
+tostring pc01_state_id pc01_district_id pc01_block_id, replace
+save $tmp/villlage_westbengal, replace
 
-use $tmp/village_3, clear
+use $tmp/pc01_id, clear
+keep if pc01_state_name == "west bengal"
+save $tmp/pc01_id_westbengal, replace
 
-/* masala merge with pc01 village names*/
-masala_merge pc01_state_name pc01_district_name pc01_block_name ///
-    using $tmp/pc01_id_2, s1(pc01_village_name) idmaster(id) idusing(id)
+/***************************************/
+/* Masala merge for each of the states */
+/**************************************/
 
-save $tmp/village_dise, replace
+
+/* Run masala merge on states without issues */
+foreach state in arunachal assam gujarat jharkhand karnataka maharashtra meghalaya punjab {
+  use $tmp/village_`state', clear
+  masala_merge pc01_state_name pc01_district_name pc01_block_name ///
+      using $tmp/pc01_id_`state', s1(pc01_village_name) idmaster(id) idusing(id)
+
+  save $tmp/village_dise_`state', replace
+}
+
+
+/* Run masala merge on states with unique id issues */
+foreach state in andhra bihar jammukashmir tripura westbengal {
+  use $tmp/village_`state', clear
+
+  /* Drop duplicate ids since they should be unique */
+  duplicates drop id, force
+
+  masala_merge pc01_state_name pc01_district_name pc01_block_name ///
+      using $tmp/pc01_id_`state', s1(pc01_village_name) idmaster(id) idusing(id)
+
+  save $tmp/village_dise_`state', replace
+}
+
+/* Run masala merge on states with syntax issues */
+foreach state in chhattisgarh orissa rajasthan uttar tamilnadu madhya {
+  use $tmp/village_`state', clear
+
+  /* Drop all special characters from pc01_village_name and id */
+  forvalues i = 0/255 {
+    if !inrange(`i',48,57) ///
+      & !inrange(`i',65,90) ///
+      & !inrange(`i',97,122) {
+      replace id = subinstr(id, `=`"char(`i')"' ',"",.)
+      replace pc01_village_name = subinstr(pc01_village_name, `=`"char(`i')"' ',"",.)
+    }
+  }
+  /* Drop duplicates */
+  duplicates drop id, force
+  /* masala merge with pc01 village names*/
+  masala_merge pc01_state_name pc01_district_name pc01_block_name ///
+      using $tmp/pc01_id_`state', s1(pc01_village_name) idmaster(id) idusing(id)
+
+  save $tmp/village_dise_`state', replace
+}
+
+
+/************************************************************************/
+/* Himachal and Haryana yet to be merged. No matches appearing in merge */
+/************************************************************************/
